@@ -122,27 +122,6 @@ classdef (Abstract) multirotor_dynamics
         
     end
     
-    function f = bodyZToInertiall(self, bodyZ, rotation)
-      % bodyToInertial method optimized for body X=Y=0
-
-      phi   = rotation(1);
-      theta = rotation(2);
-      psi   = rotation(3);
-
-      cph = cos(phi);
-      sph = sin(phi);
-      cth = cos(theta);
-      sth = sin(theta);
-      cps = cos(psi);
-      sps = sin(psi);
-
-      % This is the rightmost column of the body-to-inertial rotation matrix
-      R = [sph * sps + cph * cps * sth, cph * sps * sth - cps * sph, cph * cth];
-
-      f = bodyZ * R;
-
-     end
-
      function self = setMotors(self, motorvals)
         % Uses motor values to implement Equation 6.
         % motorvals in interval [0,1]
@@ -168,9 +147,34 @@ classdef (Abstract) multirotor_dynamics
         s = motorvals * self.p.maxrpm * pi / 30;
      end
 
-  end
+  end % methods
+  
+  methods(Static)
+      
+    function f = bodyZToInertiall(bodyZ, rotation)
+      % bodyToInertial method optimized for body X=Y=0
 
-end
+      phi   = rotation(1);
+      theta = rotation(2);
+      psi   = rotation(3);
+
+      cph = cos(phi);
+      sph = sin(phi);
+      cth = cos(theta);
+      sth = sin(theta);
+      cps = cos(psi);
+      sps = sin(psi);
+
+      % This is the rightmost column of the body-to-inertial rotation matrix
+      R = [sph * sps + cph * cps * sth, cph * sps * sth - cps * sph, cph * cth];
+
+      f = bodyZ * R;
+
+    end
+     
+  end % methods(Static)
+
+end % classdef
 
 
 %        

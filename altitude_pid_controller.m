@@ -24,15 +24,14 @@ classdef altitude_pid_controller
             
             if nargin < 5
                 windupMax = WINDUP_MAX_DEFAULT;
-                endif
-                
-                self.target = target;
-                self.posP = posP;
-                self.velI = velI;
-                self.velD = velD;
-                self.windupMax = windupMax;
-                
             end
+            
+            self.target = target;
+            self.posP = posP;
+            self.velI = velI;
+            self.velD = velD;
+            self.windupMax = windupMax;
+            
         end
         
         function c = u(self, alt, vel, dt)
