@@ -1,9 +1,9 @@
 % Multirotor Dynamics class
-% 
+%
 % Should work for any simulator, vehicle, or operating system
-% 
+%
 % Based on
-% 
+%
 %     @inproceedings{DBLPconf/icra/BouabdallahMS04,
 %       author    = {Samir Bouabdallah and Pierpaolo Murrieri and Roland Siegwart},
 %       title     = {Design and Control of an Indoor Micro Quadrotor},
@@ -18,9 +18,9 @@
 %       biburl    = {https% dblp.org/rec/bib/conf/icra/BouabdallahMS04},
 %       bibsource = {dblp computer science bibliography, https% dblp.org}
 %     }
-% 
+%
 % Copyright (C) 2019 Simon D. Levy
-% 
+%
 % MIT License
 
 classdef (Abstract) multirotor_dynamics
@@ -187,41 +187,34 @@ classdef (Abstract) multirotor_dynamics
             % Returns a copy of the state vector as a tuple
             s = self.x;
         end
-
-        function (self, accelNED, netz)
-        % Implements Equation 12 computing temporal first derivative of state.
-        % Should fill _dxdx with appropriate values.
-        % accelNED acceleration in NED inertial frame
-        % netz accelNED[2] with gravitational constant added in
-        % phidot rotational acceleration in roll axis
-        % thedot rotational acceleration in pitch axis
-        % psidot rotational acceleration in yaw axis
         
-        p = self.p;
-        x = self.x;
-        Omega = self.Omega
-        U2 = self.U2
-        U3 = self.U3
-        U4 = self.U4
-
-        phidot = x[MultirotorDynamics.STATE_PHI_DOT]
-        thedot = x[MultirotorDynamics.STATE_THETA_DOT]
-        psidot = x[MultirotorDynamics.STATE_PSI_DOT]
-
-        self.dxdt[0]  = x[MultirotorDynamics.STATE_X_DOT]                                                     x'
-        self.dxdt[1]  = accelNED[0]                                                                           x''
-        self.dxdt[2]  = x[MultirotorDynamics.STATE_Y_DOT]                                                     y'
-        self.dxdt[3]  = accelNED[1]                                                                           y''
-        self.dxdt[4]  = x[MultirotorDynamics.STATE_Z_DOT]                                                     z'
-        self.dxdt[5]  = netz                                                                                  z''
-        self.dxdt[6]  = phidot                                                                                phi'
-        self.dxdt[7]  = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * Omega + U2 / p.Ix     phi''
-        self.dxdt[8]  = thedot                                                                                theta'
-        self.dxdt[9]  = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * Omega + U3 / p.Iy)  theta''
-        self.dxdt[10] = psidot                                                                                psi'
-        self.dxdt[11] = thedot * phidot * (p.Ix - p.Iy) / p.Iz + U4 / p.Iz                                    psi''
-        end 
-
+        function self = computeStateDerivative(self, accelNED, netz)
+            % Implements Equation 12 computing temporal first derivative of state.
+            % Should fill _dxdx with appropriate values.
+            % accelNED acceleration in NED inertial frame
+            % netz accelNED[2] with gravitational constant added in
+            % phidot rotational acceleration in roll axis
+            % thedot rotational acceleration in pitch axis
+            % psidot rotational acceleration in yaw axis
+            
+            phidot = self.x(self.STATE_PHI_DOT);
+            thedot = self.x(self.STATE_THETA_DOT);
+            psidot = self.x(self.STATE_PSI_DOT);
+            
+            self.dxdt(self.STATE_X)         = self.x(self.STATE_X_DOT);
+            self.dxdt(self.STATE_X_DOT)     = accelNED(1);
+            self.dxdt(self.STATE_Y)         = self.x(self.STATE_Y_DOT);
+            self.dxdt(self.STATE_Y_DOT)     = accelNED(2);
+            self.dxdt(self.STATE_Z)         = self.x(self.STATE_Z_DOT);
+            self.dxdt(self.STATE_Z_DOT)     = netz;
+            self.dxdt(self.STATE_PHI)       = phidot;
+            self.dxdt(self.STATE_PHI_DOT)   = psidot * thedot * (self.p.Iy - self.p.Iz) / self.p.Ix - self.p.Jr / self.p.Ix * thedot * self.Omega + self.U2 / self.p.Ix;
+            self.dxdt(self.STATE_THETA)     = thedot;
+            self.dxdt(self.STATE_THETA_DOT) = -(psidot * phidot * (self.p.Iz - self.p.Ix) / self.p.Iy + self.p.Jr / self.p.Iy * phidot * self.Omega + self.U3 / self.p.Iy);
+            self.dxdt(self.STATE_PSI)       = psidot;
+            self.dxdt(self.STATE_PSI_DOT)   = thedot * phidot * (self.p.Ix - self.p.Iy) / self.p.Iz + self.U4 / self.p.Iz;
+        end
+        
     end  % methods
     
     methods(Static)
@@ -243,73 +236,63 @@ classdef (Abstract) multirotor_dynamics
             % This is the rightmost column of the body-to-inertial rotation matrix
             R = [sph * sps + cph * cps * sth, cph * sps * sth - cps * sph, cph * cth];
             
-            f = bodyZ * R;
+            f = R * bodyZ;
+            
+        end
+        
+        function body = inertialToBody(inertial, rotation)
+            
+            cph, cth, cps, sph, sth, sps = sincos(rotation);
+            
+            R = [[cps * cth,                    cth * sps,                         -sth], ...
+                [cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph], ...
+                [sph * sps + cph * cps * sth,  cph * sps * sth - cps * sph,  cph * cth]];
+            
+            body = inertial * R;
+        end
+        
+        function inertial = bodyToInertial(body, rotation)
+            % Frame-of-reference conversion routines.
+            % See Section 5 of httpwww.chrobotics.com/library/understanding-euler-angles
+            
+            cph, cth, cps, sph, sth, sps = sincos(rotation);
+            
+            R = [[cps * cth,  cps * sph * sth - cph * sps,  sph * sps + cph * cps * sth], ...
+                [cth * sps,  cph * cps + sph * sps * sth,  cph * sps * sth - cps * sph], ...
+                [-sth,       cth * sph,                                      cph * cth]];
+            
+            inertial = body * R;
+            
+        end
+        
+        function quat = eulerToQuaternion(euler)
+            
+            cph, cth, cps, sph, sth, sps = sincos(euler/2);
+            
+            % Conversion
+            quat = [cph * cth * cps + sph * sth * sps, ...
+                cph * sth * sps - sph * cth * cps, ...
+                -cph * sth * cps - sph * cth * sps, ...
+                cph * cth * sps - sph * sth * cps];
+            
+        end
+        
+        function [cph, cth,cps, sph, sth, sps] = sincos(angles)
+            
+            phi = angles(1);
+            the = angles(2);
+            psi = angles(3);
+            
+            cph = cos(phi);
+            cth = cos(the);
+            cps = cos(psi);
+            sph = sin(phi);
+            sth = sin(the);
+            sps = sin(psi);
             
         end
         
     end % methods(Static)
     
 end % classdef
-
-
-%
-%
-%    def _inertialToBody(inertial, rotation)
-%
-%        phi, theta, psi = rotation
-%
-%        cph = cos(phi)
-%        sph = sin(phi)
-%        cth = cos(theta)
-%        sth = sin(theta)
-%        cps = cos(psi)
-%        sps = sin(psi)
-%
-%        R = [[cps * cth,                    cth * sps,                         -sth],
-%             [cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph],
-%             [sph * sps + cph * cps * sth,  cph * sps * sth - cps * sph,  cph * cth]]
-%
-%        return dot(R, inertial)
-%
-%    def _bodyToInertial(body, rotation, inertial)
-%        '''
-%         Frame-of-reference conversion routines.
-%
-%         See Section 5 of http%www.chrobotics.com/library/understanding-euler-angles
-%        '''
-%
-%        phi, theta, psi = rotation
-%
-%        cph = cos(phi)
-%        sph = sin(phi)
-%        cth = cos(theta)
-%        sth = sin(theta)
-%        cps = cos(psi)
-%        sps = sin(psi)
-%
-%        R = [[cps * cth,  cps * sph * sth - cph * sps,  sph * sps + cph * cps * sth],
-%             [cth * sps,  cph * cps + sph * sps * sth,  cph * sps * sth - cps * sph],
-%             [-sth,       cth * sph,                                      cph * cth]]
-%
-%        return dot(R, body)
-%
-%    def _eulerToQuaternion(eulerAngles)
-%
-%        % Convenient renaming
-%        phi, the, psi = eulerAngles / 2
-%
-%        % Pre-computation
-%        cph = cos(phi)
-%        cth = cos(the)
-%        cps = cos(psi)
-%        sph = sin(phi)
-%        sth = sin(the)
-%        sps = sin(psi)
-%
-%        % Conversion
-%        return [[ cph * cth * cps + sph * sth * sps],
-%                [cph * sth * sps - sph * cth * cps],
-%                [-cph * sth * cps - sph * cth * sps],
-%                [cph * cth * sps - sph * sth * cps]]
-%
 
