@@ -9,25 +9,22 @@ classdef dji_phantom_dynamics < quadxap_dynamics
     methods
 
       function self = dji_phantom_dynamics
-        
-          params = parameters(
-  
+          
               % Estimated
-              5.E-06, % b
-              2.E-06, % d
+              params.b = 5.E-06;
+              params.d = 2.E-06;
   
               % https:%www.dji.com/phantom-4/info
-              1.380,  % m (kg)
-              0.350,  % l (meters)
+              params.m = 1.380; % kg
+              params.l = 0.350; % m
   
               % Estimated
-              2,      % Ix
-              2,      % Iy
-              3,      % Iz
-              38E-04, % Jr
-              15000   % maxrpm
-              );
-              
+              params.Ix = 2;      
+              params.Iy = 2;      
+              params.Iz = 3;      
+              params.Jr = 38E-04; 
+              params.maxrmp = 15000;  
+                        
               self = self@quadxap_dynamics(params);
   
       end

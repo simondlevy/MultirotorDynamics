@@ -15,14 +15,6 @@ VEL_D = 0;
 % Time constant
 DT = 0.001;
 
-
-function _subplot(t, x, k, label)
-    subplot(3,1,k)
-    plot(t, x)
-    ylabel(label)
-end
-
-
 % Create PID controller
 pid  = altitude_pid_controller(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
@@ -71,4 +63,10 @@ pid  = altitude_pid_controller(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
   %_subplot(tvals, zvals, 1, 'Altitude (m)')
   %_subplot(tvals, vvals, 2, 'Velocity (m/s)')
   %_subplot(tvals, uvals, 3, 'Motors')
+
+ function do_subplot(t, x, k, label)
+    subplot(3,1,k)
+    plot(t, x)
+    ylabel(label)
+end
 
