@@ -4,7 +4,7 @@
 %
 % MIT License
 
-DURATION        = 30; % seconds
+DURATION        = 15; % seconds
 ALTITUDE_TARGET = 10; % meters
 
 % PID params
@@ -65,6 +65,7 @@ end
 do_subplot(tvals, zvals, 1, 'Altitude (m)')
 do_subplot(tvals, vvals, 2, 'Velocity (m/s)')
 do_subplot(tvals, uvals, 3, 'Motors')
+ylim([-.1,1.1])
 
 function do_subplot(t, x, k, label)
 subplot(3,1,k)
