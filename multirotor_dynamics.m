@@ -235,7 +235,7 @@ classdef (Abstract) multirotor_dynamics
             [cph, sph, cth, sth, cps, sps] = sincos(rotation);
             
             % This is the rightmost column of the body-to-inertial rotation matrix
-            R = [sph * sps + cph * cps * sth, cph * sps * sth - cps * sph, cph * cth];
+            R = [sph * sps + cph * cps * sth; cph * sps * sth - cps * sph; cph * cth];
             
             inertial = bodyZ * R;
             
@@ -245,9 +245,9 @@ classdef (Abstract) multirotor_dynamics
             
             [cph, sph, cth, sth, cps, sps] = sincos(rotation);
             
-            R = [cps * cth,                    cth * sps,                         -sth, ...
-                cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph, ...
-                sph * sps + cph * cps * sth,  cph * sps * sth - cps * sph,  cph * cth];
+            R = [cps * cth,                    cth * sps,                         -sth; 
+                 cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph; 
+                 sph * sps + cph * cps * sth,  cph * sps * sth - cps * sph,  cph * cth];
             
             body =  dot(R, inertial);
             
@@ -258,8 +258,8 @@ classdef (Abstract) multirotor_dynamics
             [cph, sph, cth, sth, cps, sps] = sincos(rotation);
             
             
-            R = [cps * cth,  cps * sph * sth - cph * sps,  sph * sps + cph * cps * sth, ...
-                cth * sps,  cph * cps + sph * sps * sth,  cph * sps * sth - cps * sph, ...
+            R = [cps * cth, cps * sph * sth - cph * sps,  sph * sps + cph * cps * sth;
+                cth * sps,  cph * cps + sph * sps * sth,  cph * sps * sth - cps * sph;
                 -sth,       cth * sph,                                      cph * cth];
             
             inertial = dot(R, body);
@@ -271,9 +271,9 @@ classdef (Abstract) multirotor_dynamics
             [cph, sph, cth, sth, cps, sps] = sincos(euler/2);
             
             quat =  [cph * cth * cps + sph * sth * sps, ...
-                cph * sth * sps - sph * cth * cps, ...
-                -cph * sth * cps - sph * cth * sps, ...
-                cph * cth * sps - sph * sth * cps];
+                     cph * sth * sps - sph * cth * cps, ...
+                    -cph * sth * cps - sph * cth * sps, ...
+                     cph * cth * sps - sph * sth * cps];
         end
         
         function [cph, sph, cth, sth, cps, sps] = sincos(angles)
