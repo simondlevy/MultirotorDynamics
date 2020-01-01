@@ -231,13 +231,12 @@ classdef (Abstract) multirotor_dynamics
         function inertial = bodyZToInertiall(bodyZ, rotation)
             % bodyToInertial method optimized for body X=Y=0
             
-            
             [cph, sph, cth, sth, cps, sps] = sincos(rotation);
             
             % This is the rightmost column of the body-to-inertial rotation matrix
             R = [sph * sps + cph * cps * sth; cph * sps * sth - cps * sph; cph * cth];
             
-            inertial = bodyZ * R;
+            inertial = (R * bodyZ')';
             
         end
         
@@ -249,7 +248,7 @@ classdef (Abstract) multirotor_dynamics
                  cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph; 
                  sph * sps + cph * cps * sth,  cph * sps * sth - cps * sph,  cph * cth];
             
-            body =  dot(R, inertial);
+            body =  (R * inertial')';
             
         end
         
@@ -262,7 +261,7 @@ classdef (Abstract) multirotor_dynamics
                 cth * sps,  cph * cps + sph * sps * sth,  cph * sps * sth - cps * sph;
                 -sth,       cth * sph,                                      cph * cth];
             
-            inertial = dot(R, body);
+            inertial = (R * body')';
             
         end
         
