@@ -26,7 +26,7 @@
 classdef (Abstract) multirotor_dynamics
     % Abstract class for multirotor dynamics.
     
-    properties(Constant)
+    properties(Constant, Access=private)
         
         % Position map for state vector
         STATE_X         = 1;
@@ -47,7 +47,7 @@ classdef (Abstract) multirotor_dynamics
         
     end
     
-    properties
+    properties (Access=private)
         
         % instance variables
         params;
@@ -88,7 +88,7 @@ classdef (Abstract) multirotor_dynamics
         
     end
     
-    methods
+    methods (Access=public)
         
         function self = multirotor_dynamics(params, motorCount, airborne)
             % Constructor
@@ -178,14 +178,18 @@ classdef (Abstract) multirotor_dynamics
             
         end % update()
         
-        function s = computeMotorSpeed(self, motorvals)
-            % Computes motor speed (rad/s) based on motor value in [0,1]
-            s = motorvals * self.p.maxrpm * pi / 30;
-        end
-        
         function s = getState(self)
             % Returns a copy of the state vector as a tuple
             s = self.x;
+        end
+        
+    end % instance methods
+    
+    methods(Access=private)
+        
+        function s = computeMotorSpeed(self, motorvals)
+            % Computes motor speed (rad/s) based on motor value in [0,1]
+            s = motorvals * self.p.maxrpm * pi / 30;
         end
         
         function self = computeStateDerivative(self, accelNED, netz)
@@ -217,9 +221,9 @@ classdef (Abstract) multirotor_dynamics
             self.dxdt(self.STATE_PSI_DOT)    = thedot * phidot * (p.Ix - p.Iy) / p.Iz + self.U4 / p.Iz;
         end
         
-    end  % methods
+    end  % private instance methods
     
-    methods(Static)
+    methods(Static, Access=private)
         
         %  Frame-of-reference conversion routines
         %  See Section 5 of httpwww.chrobotics.com/library/understanding-euler-angles
@@ -236,7 +240,6 @@ classdef (Abstract) multirotor_dynamics
             inertial = bodyZ * R;
             
         end
-        
         
         function body = inertialToBody(inertial, rotation)
             
@@ -289,7 +292,7 @@ classdef (Abstract) multirotor_dynamics
             
         end
         
-    end % methods(Static)
+    end % private static methods
     
 end % classdef
 
