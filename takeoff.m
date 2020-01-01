@@ -17,10 +17,10 @@ VEL_D = 0;
 DT = 0.001;
 
 % Create PID controller
-pid  = altitude_pid_controller(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
+pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
 % Create dynamics
-dyn = dji_phantom_dynamics;
+dyn = DjiPhantomDynamics;
 
 % Initialize arrays for plotting
 n = fix(DURATION/DT);
@@ -45,8 +45,8 @@ for k = 1:length(tvals)
     s = dyn.getState();
     
     % Extract altitude, vertical velocity from state, negating to handle NED coordinate system
-    z = -s(multirotor_dynamics.STATE_Z);
-    v = -s(multirotor_dynamics.STATE_Z_DOT);    
+    z = -s(MultirotorDynamics.STATE_Z);
+    v = -s(MultirotorDynamics.STATE_Z_DOT);    
 
     % Get correction from PID controller
     u = pid.u(z, v, DT);

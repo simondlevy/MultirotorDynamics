@@ -4,11 +4,11 @@
 %
 % MIT License
 
-classdef dji_phantom_dynamics < quadxap_dynamics
+classdef DjiPhantomDynamics < QuadXAPDynamics
 
     methods
 
-      function obj = dji_phantom_dynamics
+      function obj = DjiPhantomDynamics
           
               % Estimated
               params.b = 5.E-06;
@@ -25,7 +25,7 @@ classdef dji_phantom_dynamics < quadxap_dynamics
               params.Jr = 38E-04; 
               params.maxrpm = 15000;  
                         
-              obj = obj@quadxap_dynamics(params); 
+              obj = obj@QuadXAPDynamics(params); 
       end
 
     end

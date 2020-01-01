@@ -1,4 +1,4 @@
-classdef altitude_pid_controller
+classdef AltitudePidController
     
     properties (Access=private)
         
@@ -20,7 +20,7 @@ classdef altitude_pid_controller
     
     methods
         
-        function obj = altitude_pid_controller(target, posP, velP, velI, velD, windupMax)
+        function obj = AltitudePidController(target, posP, velP, velI, velD, windupMax)
             
             if nargin < 6
                 windupMax = obj.WINDUP_MAX_DEFAULT;

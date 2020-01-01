@@ -23,7 +23,7 @@
 %
 % MIT License
 
-classdef (Abstract) multirotor_dynamics
+classdef (Abstract) MultirotorDynamics
     % Abstract class for multirotor dynamics.
     
     properties(Constant, Access=public)
@@ -89,7 +89,7 @@ classdef (Abstract) multirotor_dynamics
     
     methods (Access=public)
         
-        function obj = multirotor_dynamics(params, motorCount, airborne)
+        function obj = MultirotorDynamics(params, motorCount, airborne)
             % Constructor
             % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
             % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
