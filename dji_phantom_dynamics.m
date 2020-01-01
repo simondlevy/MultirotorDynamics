@@ -8,7 +8,7 @@ classdef dji_phantom_dynamics < quadxap_dynamics
 
     methods
 
-      function self = dji_phantom_dynamics
+      function obj = dji_phantom_dynamics
           
               % Estimated
               params.b = 5.E-06;
@@ -23,10 +23,9 @@ classdef dji_phantom_dynamics < quadxap_dynamics
               params.Iy = 2;      
               params.Iz = 3;      
               params.Jr = 38E-04; 
-              params.maxrmp = 15000;  
+              params.maxrpm = 15000;  
                         
-              self = self@quadxap_dynamics(params);
-  
+              obj = obj@quadxap_dynamics(params); 
       end
 
     end

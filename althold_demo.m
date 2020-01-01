@@ -1,7 +1,8 @@
-%Run simple altitude-hold PID controller to test dynamics
-%Copyright (C) 2019 Simon D. Levy
-%MIT License
-
+% Run simple altitude-hold PID controller to test dynamics
+%
+% Copyright (C) 2019 Simon D. Levy
+%
+% MIT License
 
 DURATION        = 30; % seconds
 ALTITUDE_TARGET = 10; % meters
@@ -18,7 +19,8 @@ DT = 0.001;
 % Create PID controller
 pid  = altitude_pid_controller(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
-dyn = dji_phantom_dynamics();
+% Create dynamics
+dyn = dji_phantom_dynamics;
 
 % Initialize arrays for plotting
 n = fix(DURATION/DT);
@@ -53,7 +55,6 @@ for k = 1:length(tvals)
     u = max(0, min(1, u));
     
     % Track values
-    k = k(0);
     uvals(k) = u;
     zvals(k) = z;
     vvals(k) = v;

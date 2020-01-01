@@ -14,23 +14,23 @@ classdef quadxap_dynamics < multirotor_dynamics
   
     methods
 
-        function self = quadxap_dynamics(params)
-            self = self@multirotor_dynamics(params, 4);
+        function obj = quadxap_dynamics(params)
+            obj = obj@multirotor_dynamics(params, 4);
         end
 
-        function f = u2(self,  o)
+        function f = u2(~,  o)
             % roll right
-            f = (o(1) + o(2)) - (o(0) + o(3));
+            f = (o(2) + o(3)) - (o(1) + o(2));
         end
        
-        function u3(self,  o)
+        function f = u3(~,  o)
             % pitch forward
-            f = (o(1) + o(3)) - (o(0) + o(2));
+            f = (o(2) + o(4)) - (o(1) + o(3));
         end
        
-        function u4(self,  o)
+        function f = u4(~,  o)
             % yaw cw
-            f = (o(0) + o(1)) - (o(2) + o(3));
+            f = sum(o);
         end
 
         function d = motorDirection(i)

@@ -78,19 +78,19 @@ classdef (Abstract) multirotor_dynamics
     methods (Abstract)
         
         % roll right
-        u2(self, omega2)
+        u2(obj, omega2)
         
         % pitch forward
-        u3(self, omega2)
+        u3(obj, omega2)
         
         % yaw cw
-        u4(self, omega2)
+        u4(obj, omega2)
         
     end
     
     methods (Access=public)
         
-        function self = multirotor_dynamics(params, motorCount, airborne)
+        function obj = multirotor_dynamics(params, motorCount, airborne)
             % Constructor
             % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
             % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
@@ -99,100 +99,100 @@ classdef (Abstract) multirotor_dynamics
                 airborne = true;
             end
             
-            self.params = params;
-            self.motorCount = motorCount;
+            obj.params = params;
+            obj.motorCount = motorCount;
             
-            self.omegas  = zeros(1, motorCount);
-            self.omegas2 = zeros(1, motorCount);
+            obj.omegas  = zeros(1, motorCount);
+            obj.omegas2 = zeros(1, motorCount);
             
             % Always start at location (0,0,0) with zero velocities
-            self.x    = zeros(1, 12);
-            self.dxdt = zeros(1, 12);
+            obj.x    = zeros(1, 12);
+            obj.dxdt = zeros(1, 12);
             
-            self.airborne = false;
+            obj.airborne = airborne;
             
             % Values computed in Equation 6
-            self.U1 = 0;     % total thrust
-            self.U2 = 0;     % roll thrust right
-            self.U3 = 0;     % pitch thrust forward
-            self.U4 = 0;     % yaw thrust clockwise
-            self.Omega = 0;  % torque clockwise
+            obj.U1 = 0;     % total thrust
+            obj.U2 = 0;     % roll thrust right
+            obj.U3 = 0;     % pitch thrust forward
+            obj.U4 = 0;     % yaw thrust clockwise
+            obj.Omega = 0;  % torque clockwise
             
             % Initialize inertial frame acceleration in NED coordinates
-            self.inertialAccel = self.bodyZToInertiall(-self.g, [0,0,0]);
+            obj.inertialAccel = transforms.bodyZToInertiall(-obj.g, [0,0,0]);
             
             % We usuall start on ground, but can start in air for testing
-            self.airborne = airborne;
+            obj.airborne = airborne;
             
         end
         
-        function self = setMotors(self, motorvals)
+        function obj = setMotors(obj, motorvals)
             % Uses motor values to implement Equation 6.
             % motorvals in interval [0,1]
             
             % Convert the  motor values to radians per second
-            self.omegas = self.computeMotorSpeed(motorvals); % rad/s
+            obj.omegas = obj.computeMotorSpeed(motorvals); % rad/s
             
             % Compute overall torque from omegas before squaring
-            self.Omega = self.u4(self.omegas);
+            obj.Omega = obj.u4(obj.omegas);
             
             % Overall thrust is sum of squared omegas
-            self.omegas2 = self.omegas^2;
-            self.U1 = sum(self.p.b * self.omegas2);
+            obj.omegas2 = obj.omegas.^2;
+            obj.U1 = sum(obj.params.b * obj.omegas2);
             
             % Use the squared Omegas to implement the rest of Eqn. 6
-            self.U2 = self.p.l * self.p.b * self.u2(self.omegas2);
-            self.U3 = self.p.l * self.p.b * self.u3(self.omegas2);
-            self.U4 = self.p.d * self.u4(self.omegas2);
+            obj.U2 = obj.params.l * obj.params.b * obj.u2(obj.omegas2);
+            obj.U3 = obj.params.l * obj.params.b * obj.u3(obj.omegas2);
+            obj.U4 = obj.params.d * obj.u4(obj.omegas2);
             
         end
         
-        function self = update(self, dt)
+        function obj = update(obj, dt)
             % Updates state using  time in seconds since previous update
             
             % Use the current Euler angles to rotate the orthogonal thrust vector into the inertial frame.
             % Negate to use NED.
-            euler = [self.x(self.STATE_PHI), self.x(self.STATE_THETA), self.x(self.STATE_PSI)];
-            accelNED = bodyZToInertiall(-self.U1 / self.p.m, euler);
+            euler = [obj.x(obj.STATE_PHI), obj.x(obj.STATE_THETA), obj.x(obj.STATE_PSI)];
+            accelNED = transforms.bodyZToInertiall(-obj.U1 / obj.params.m, euler);
             
             % We're airborne once net downward acceleration goes below zero
-            netz = accelNED(3) + self.g;
+            netz = accelNED(3) + obj.g;
             
             % If we're not airborne, we become airborne when downward acceleration has become negative
-            if ~self.airborne
-                self.airborne = netz < 0;
+            if ~obj.airborne
+                obj.airborne = netz < 0;
             end
             
             % Once airborne, we can update dynamics
-            if self.airborne
+            if obj.airborne
                 
                 %Compute the state derivatives using Equation 12
-                self = self.computeStateDerivative(accelNED, netz);
+                obj = obj.computeStateDerivative(accelNED, netz);
                 
                 % Compute state as first temporal integral of first temporal derivative
-                self.x = self.x + dt * self.dxdt;
+                obj.x = obj.x + dt * obj.dxdt;
                 
                 % Once airborne, inertial-frame acceleration is same as NED acceleration
-                self.inertialAccel = accelNED;
+                obj.inertialAccel = accelNED;
             end
             
         end % update()
         
-        function s = getState(self)
+        function s = getState(obj)
             % Returns a copy of the state vector as a tuple
-            s = self.x;
+            s = obj.x;
         end
         
     end % instance methods
     
     methods(Access=private)
         
-        function s = computeMotorSpeed(self, motorvals)
+        function s = computeMotorSpeed(obj, motorvals)
             % Computes motor speed (rad/s) based on motor value in [0,1]
-            s = motorvals * self.params.maxrpm * pi / 30;
+            s = motorvals * obj.params.maxrpm * pi / 30;
         end
         
-        function self = computeStateDerivative(self, accelNED, netz)
+        function obj = computeStateDerivative(obj, accelNED, netz)
             % Implements Equation 12 computing temporal first derivative of state.
             % Should fill _dxdx with appropriate values.
             % accelNED acceleration in NED inertial frame
@@ -201,97 +201,27 @@ classdef (Abstract) multirotor_dynamics
             % thedot rotational acceleration in pitch axis
             % psidot rotational acceleration in yaw axis
             
-            phidot = self.x(self.STATE_PHI_DOT);
-            thedot = self.x(self.STATE_THETA_DOT);
-            psidot = self.x(self.STATE_PSI_DOT);
+            phidot = obj.x(obj.STATE_PHI_DOT);
+            thedot = obj.x(obj.STATE_THETA_DOT);
+            psidot = obj.x(obj.STATE_PSI_DOT);
             
-            p = self.params;
+            p = obj.params;
             
-            self.dxdt(self.STATE_X)          = self.x(self.STATE_X_DOT);
-            self.dxdt(self.STATE_X_DOT)      = accelNED(1);
-            self.dxdt(self.STATE_Y)          = self.x(self.STATE_Y_DOT);
-            self.dxdt(self.STATE_Y_DOT)      = accelNED(2);
-            self.dxdt(self.STATE_Z)          = self.x(self.STATE_Z_DOT);
-            self.dxdt(self.STATE_Z_DOT)      = netz;
-            self.dxdt(self.STATE_PHI)        = phidot;
-            self.dxdt(self.STATE_PHI_DOT)    = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * self.Omega + self.U2 / p.Ix;
-            self.dxdt(self.STATE_THETA)      = thedot;
-            self.dxdt(self.STATE_THETA_DOT)  = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * self.Omega + self.U3 / p.Iy);
-            self.dxdt(self.STATE_PSI)        = psidot;
-            self.dxdt(self.STATE_PSI_DOT)    = thedot * phidot * (p.Ix - p.Iy) / p.Iz + self.U4 / p.Iz;
+            obj.dxdt(obj.STATE_X)          = obj.x(obj.STATE_X_DOT);
+            obj.dxdt(obj.STATE_X_DOT)      = accelNED(1);
+            obj.dxdt(obj.STATE_Y)          = obj.x(obj.STATE_Y_DOT);
+            obj.dxdt(obj.STATE_Y_DOT)      = accelNED(2);
+            obj.dxdt(obj.STATE_Z)          = obj.x(obj.STATE_Z_DOT);
+            obj.dxdt(obj.STATE_Z_DOT)      = netz;
+            obj.dxdt(obj.STATE_PHI)        = phidot;
+            obj.dxdt(obj.STATE_PHI_DOT)    = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * obj.Omega + obj.U2 / p.Ix;
+            obj.dxdt(obj.STATE_THETA)      = thedot;
+            obj.dxdt(obj.STATE_THETA_DOT)  = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * obj.Omega + obj.U3 / p.Iy);
+            obj.dxdt(obj.STATE_PSI)        = psidot;
+            obj.dxdt(obj.STATE_PSI_DOT)    = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;
         end
         
     end  % private instance methods
-    
-    methods(Static, Access=private)
-        
-        %  Frame-of-reference conversion routines
-        %  See Section 5 of httpwww.chrobotics.com/library/understanding-euler-angles
-        
-        function inertial = bodyZToInertiall(bodyZ, rotation)
-            % bodyToInertial method optimized for body X=Y=0
-            
-            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(rotation);
-            
-            % This is the rightmost column of the body-to-inertial rotation matrix
-            R = [sph * sps + cph * cps * sth; cph * sps * sth - cps * sph; cph * cth];
-            
-            inertial = (R * bodyZ')';
-            
-        end
-        
-        function body = inertialToBody(inertial, rotation)
-            
-            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(rotation);
-            
-            R = [cps * cth,                    cth * sps,                         -sth; 
-                 cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph; 
-                 sph * sps + cph * cps * sth,  cph * sps * sth - cps * sph,  cph * cth];
-            
-            body =  (R * inertial')';
-            
-        end
-        
-        function inertial = bodyToInertial(body, rotation)
-            
-            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(rotation);
-            
-            
-            R = [cps * cth, cps * sph * sth - cph * sps,  sph * sps + cph * cps * sth;
-                cth * sps,  cph * cps + sph * sps * sth,  cph * sps * sth - cps * sph;
-                -sth,       cth * sph,                                      cph * cth];
-            
-            inertial = (R * body')';
-            
-        end
-        
-        function quat = eulerToQuaternion(euler)
-            
-            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(euler/2);
-            
-            quat =  [cph * cth * cps + sph * sth * sps, ...
-                     cph * sth * sps - sph * cth * cps, ...
-                    -cph * sth * cps - sph * cth * sps, ...
-                     cph * cth * sps - sph * sth * cps];
-        end
-        
-        function [cph, sph, cth, sth, cps, sps] = sincos(angles)
-            % pre-compute helper for angular transform matrices
-            
-            phi   = angles(1);
-            theta = angles(2);
-            psi   = angles(3);
-            
-            cph = cos(phi);
-            sph = sin(phi);
-            cth = cos(theta);
-            sth = sin(theta);
-            cps = cos(psi);
-            sps = sin(psi);
-            
-        end
-        
-    end % private static methods
     
 end % classdef
 
