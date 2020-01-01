@@ -36,24 +36,24 @@ u = 0;
 for k = 1:length(tvals)
     
     % Set all the motors to the value obtained from the PID controller
-    dyn.setMotors(u*ones(1,4));
+    dyn = dyn.setMotors(u*ones(1,4));
     
     % Update the dynamics
-    dyn.update(.001);
+    dyn = dyn.update(.001);
     
     % Get the current vehicle state
     s = dyn.getState();
     
     % Extract altitude, vertical velocity from state, negating to handle NED coordinate system
     z = -s(4);
-    v = -s(5);
+    v = -s(5);    
     
     % Get correction from PID controller
     u = pid.u(z, v, DT);
-    
+        
     % Constrain correction to [0,1] to represent motor value
     u = max(0, min(1, u));
-    
+        
     % Track values
     uvals(k) = u;
     zvals(k) = z;

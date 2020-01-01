@@ -54,7 +54,6 @@ classdef (Abstract) multirotor_dynamics
         motorCount;
         
         omegas;
-        omegas2;
         
         % Always start at location (0,0,0) with zero velocities
         x;
@@ -103,14 +102,11 @@ classdef (Abstract) multirotor_dynamics
             obj.motorCount = motorCount;
             
             obj.omegas  = zeros(1, motorCount);
-            obj.omegas2 = zeros(1, motorCount);
             
             % Always start at location (0,0,0) with zero velocities
             obj.x    = zeros(1, 12);
             obj.dxdt = zeros(1, 12);
-            
-            obj.airborne = airborne;
-            
+                        
             % Values computed in Equation 6
             obj.U1 = 0;     % total thrust
             obj.U2 = 0;     % roll thrust right
@@ -129,22 +125,22 @@ classdef (Abstract) multirotor_dynamics
         function obj = setMotors(obj, motorvals)
             % Uses motor values to implement Equation 6.
             % motorvals in interval [0,1]
-            
+                        
             % Convert the  motor values to radians per second
             obj.omegas = obj.computeMotorSpeed(motorvals); % rad/s
-            
+                        
             % Compute overall torque from omegas before squaring
             obj.Omega = obj.u4(obj.omegas);
-            
+                        
             % Overall thrust is sum of squared omegas
-            obj.omegas2 = obj.omegas.^2;
-            obj.U1 = sum(obj.params.b * obj.omegas2);
-            
+            omegas2 = obj.omegas.^2;
+            obj.U1 = sum(obj.params.b * omegas2);
+
             % Use the squared Omegas to implement the rest of Eqn. 6
-            obj.U2 = obj.params.l * obj.params.b * obj.u2(obj.omegas2);
-            obj.U3 = obj.params.l * obj.params.b * obj.u3(obj.omegas2);
-            obj.U4 = obj.params.d * obj.u4(obj.omegas2);
-            
+            obj.U2 = obj.params.l * obj.params.b * obj.u2(omegas2);
+            obj.U3 = obj.params.l * obj.params.b * obj.u3(omegas2);
+            obj.U4 = obj.params.d * obj.u4(omegas2);
+                        
         end
         
         function obj = update(obj, dt)
@@ -224,6 +220,3 @@ classdef (Abstract) multirotor_dynamics
     end  % private instance methods
     
 end % classdef
-
-
-
