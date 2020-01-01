@@ -26,7 +26,7 @@
 classdef (Abstract) multirotor_dynamics
     % Abstract class for multirotor dynamics.
     
-    properties(Constant, Access=private)
+    properties(Constant, Access=public)
         
         % Position map for state vector
         STATE_X         = 1;
@@ -153,7 +153,7 @@ classdef (Abstract) multirotor_dynamics
             
             % We're airborne once net downward acceleration goes below zero
             netz = accelNED(3) + obj.g;
-            
+
             % If we're not airborne, we become airborne when downward acceleration has become negative
             if ~obj.airborne
                 obj.airborne = netz < 0;
@@ -170,6 +170,7 @@ classdef (Abstract) multirotor_dynamics
                 
                 % Once airborne, inertial-frame acceleration is same as NED acceleration
                 obj.inertialAccel = accelNED;
+
             end
             
         end % update()

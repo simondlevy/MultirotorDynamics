@@ -45,9 +45,9 @@ for k = 1:length(tvals)
     s = dyn.getState();
     
     % Extract altitude, vertical velocity from state, negating to handle NED coordinate system
-    z = -s(4);
-    v = -s(5);    
-    
+    z = -s(multirotor_dynamics.STATE_Z);
+    v = -s(multirotor_dynamics.STATE_Z_DOT);    
+
     % Get correction from PID controller
     u = pid.u(z, v, DT);
         
