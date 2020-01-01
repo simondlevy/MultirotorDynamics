@@ -189,7 +189,7 @@ classdef (Abstract) multirotor_dynamics
         
         function s = computeMotorSpeed(self, motorvals)
             % Computes motor speed (rad/s) based on motor value in [0,1]
-            s = motorvals * self.p.maxrpm * pi / 30;
+            s = motorvals * self.params.maxrpm * pi / 30;
         end
         
         function self = computeStateDerivative(self, accelNED, netz)
@@ -231,7 +231,7 @@ classdef (Abstract) multirotor_dynamics
         function inertial = bodyZToInertiall(bodyZ, rotation)
             % bodyToInertial method optimized for body X=Y=0
             
-            [cph, sph, cth, sth, cps, sps] = sincos(rotation);
+            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(rotation);
             
             % This is the rightmost column of the body-to-inertial rotation matrix
             R = [sph * sps + cph * cps * sth; cph * sps * sth - cps * sph; cph * cth];
@@ -242,7 +242,7 @@ classdef (Abstract) multirotor_dynamics
         
         function body = inertialToBody(inertial, rotation)
             
-            [cph, sph, cth, sth, cps, sps] = sincos(rotation);
+            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(rotation);
             
             R = [cps * cth,                    cth * sps,                         -sth; 
                  cps * sph * sth - cph * sps,  cph * cps + sph * sps * sth,  cth * sph; 
@@ -254,7 +254,7 @@ classdef (Abstract) multirotor_dynamics
         
         function inertial = bodyToInertial(body, rotation)
             
-            [cph, sph, cth, sth, cps, sps] = sincos(rotation);
+            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(rotation);
             
             
             R = [cps * cth, cps * sph * sth - cph * sps,  sph * sps + cph * cps * sth;
@@ -267,7 +267,7 @@ classdef (Abstract) multirotor_dynamics
         
         function quat = eulerToQuaternion(euler)
             
-            [cph, sph, cth, sth, cps, sps] = sincos(euler/2);
+            [cph, sph, cth, sth, cps, sps] = multirotor_dynamics.sincos(euler/2);
             
             quat =  [cph * cth * cps + sph * sth * sps, ...
                      cph * sth * sps - sph * cth * cps, ...
