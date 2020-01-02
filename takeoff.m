@@ -53,48 +53,42 @@ while tprev < DURATION
     x     =  s(MultirotorDynamics.STATE_X);
     y     =  s(MultirotorDynamics.STATE_Y);
     z     = -s(MultirotorDynamics.STATE_Z);
-    v     = -s(MultirotorDynamics.STATE_Z_DOT);    
-
+    v     = -s(MultirotorDynamics.STATE_Z_DOT);
+    
     % Show the vehicle
-    show_vehicle(phi, theta, psi, x, y, z)
-
+    showquad(phi, theta, psi, x, y, z)
+    
     % Update the timer
     t = toc;
     dt = t - tprev;
     tprev = t;
-
+    
     % Get correction from PID controller
-    if dt > 0 
+    if dt > 0
         u = pid.u(z, v, dt);
     end
-        
+    
     % Constrain correction to [0,1] to represent motor value
     u = max(0, min(1, u));
-        
+    
     % Track values
     tvals = [tvals, t];
     zvals = [zvals, z];
     vvals = [vvals, v];
     uvals = [uvals, u];
-
-   
+    
+    
 end
 
 % Plot results
+figure
 make_subplot(tvals, zvals, 1, 'Altitude (m)')
 make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
 make_subplot(tvals, uvals, 3, 'Motors')
 ylim([-.1,1.1])
 
 function make_subplot(t, x, k, label)
-    subplot(3,1,k)
-    plot(t, x)
-    ylabel(label)
+subplot(3,1,k)
+plot(t, x)
+ylabel(label)
 end
-
-function show_vehicle(phi, theta, psi, x, y, z)
-    plot3(x, y, z, 'or','MarkerSize',5,'MarkerFaceColor','r')
-    axis([-10 10 -10 10 0 10])
-    drawnow
-end
-
