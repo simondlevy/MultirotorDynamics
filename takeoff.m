@@ -4,8 +4,7 @@
 %
 % MIT License
 
-DURATION        = 15; % seconds
-ALTITUDE_TARGET = 10; % meters
+DURATION = 40; % seconds
 
 % PID params
 ALT_P = 1.0;
@@ -23,17 +22,20 @@ pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 dyn = DjiPhantomDynamics;
 
 % Initialize arrays for plotting
-n = fix(DURATION/DT);
-tvals = linspace(0, DURATION, n);
-uvals = zeros(1,n);
-zvals = zeros(1,n);
-vvals = zeros(1,n);
+tvals = [];
+uvals = [];
+zvals = [];
+vvals = [];
 
 % Motors are initially off
 u = 0;
 
-% Loop over time values
-for k = 1:length(tvals)
+% Start timing
+tprev = 0;
+tic
+
+% Loop for duration
+while tprev < DURATION
     
     % Set all the motors to the value obtained from the PID controller
     dyn = dyn.setMotors(u*ones(1,4));
@@ -41,35 +43,58 @@ for k = 1:length(tvals)
     % Update the dynamics
     dyn = dyn.update(.001);
     
-    % Get the current vehicle state
+    % Get the current vehicle state vector
     s = dyn.getState();
     
-    % Extract altitude, vertical velocity from state, negating to handle NED coordinate system
-    z = -s(MultirotorDynamics.STATE_Z);
-    v = -s(MultirotorDynamics.STATE_Z_DOT);    
+    % Extract values from state vector, negating to handle NED coordinate system
+    phi   =  s(MultirotorDynamics.STATE_PHI);
+    theta =  s(MultirotorDynamics.STATE_THETA);
+    psi   =  s(MultirotorDynamics.STATE_PSI);
+    x     =  s(MultirotorDynamics.STATE_X);
+    y     =  s(MultirotorDynamics.STATE_Y);
+    z     = -s(MultirotorDynamics.STATE_Z);
+    v     = -s(MultirotorDynamics.STATE_Z_DOT);    
+
+    % Show the vehicle
+    show_vehicle(phi, theta, psi, x, y, z)
+
+    % Update the timer
+    t = toc;
+    dt = t - tprev;
+    tprev = t;
 
     % Get correction from PID controller
-    u = pid.u(z, v, DT);
+    if dt > 0 
+        u = pid.u(z, v, dt);
+    end
         
     % Constrain correction to [0,1] to represent motor value
     u = max(0, min(1, u));
         
     % Track values
-    uvals(k) = u;
-    zvals(k) = z;
-    vvals(k) = v;
-    
+    tvals = [tvals, t];
+    zvals = [zvals, z];
+    vvals = [vvals, v];
+    uvals = [uvals, u];
+
+   
 end
 
 % Plot results
-do_subplot(tvals, zvals, 1, 'Altitude (m)')
-do_subplot(tvals, vvals, 2, 'Velocity (m/s)')
-do_subplot(tvals, uvals, 3, 'Motors')
+make_subplot(tvals, zvals, 1, 'Altitude (m)')
+make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
+make_subplot(tvals, uvals, 3, 'Motors')
 ylim([-.1,1.1])
 
-function do_subplot(t, x, k, label)
-subplot(3,1,k)
-plot(t, x)
-ylabel(label)
+function make_subplot(t, x, k, label)
+    subplot(3,1,k)
+    plot(t, x)
+    ylabel(label)
+end
+
+function show_vehicle(phi, theta, psi, x, y, z)
+    plot3(x, y, z, 'or','MarkerSize',5,'MarkerFaceColor','r')
+    axis([-10 10 -10 10 0 10])
+    drawnow
 end
 
