@@ -77,15 +77,14 @@ while tprev < DURATION
     vvals = [vvals, v];
     uvals = [uvals, u];
     
-    
 end
 
 % Plot results
-figure
-make_subplot(tvals, zvals, 1, 'Altitude (m)')
-make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
-make_subplot(tvals, uvals, 3, 'Motors')
-ylim([-.1,1.1])
+%figure
+%make_subplot(tvals, zvals, 1, 'Altitude (m)')
+%make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
+%make_subplot(tvals, uvals, 3, 'Motors')
+%ylim([-.1,1.1])
 
 function make_subplot(t, x, k, label)
 subplot(3,1,k)
