@@ -4,6 +4,8 @@
 %
 % MIT License
 
+% Simulation params
+ALTITUDE_TARGET = 10;
 DURATION = 40; % seconds
 
 % PID params
@@ -20,6 +22,9 @@ pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
 % Create dynamics
 dyn = DjiPhantomDynamics;
+
+% Create plot object
+q = QuadDisplay;
 
 % Initialize arrays for plotting
 tvals = [];
@@ -56,7 +61,7 @@ while tprev < DURATION
     v     = -s(MultirotorDynamics.STATE_Z_DOT);
     
     % Show the vehicle
-    showquad(phi, theta, psi, x, y, z)
+    q.show(x, y, z, phi, theta, psi)
     
     % Update the timer
     t = toc;
