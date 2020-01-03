@@ -6,7 +6,7 @@
 
 % Simulation params
 ALTITUDE_TARGET = 10;
-DURATION        = 10; % seconds
+DURATION        = 10; % secondsf
 
 % PID params
 ALT_P = 1.0;

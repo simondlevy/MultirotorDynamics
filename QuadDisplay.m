@@ -51,7 +51,7 @@ classdef QuadDisplay
             y2 = y+dy2*obj.d;
             plot3([x1,x2], [y1,y2], [z,z], obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH)
             obj.plotprop(x1,y1,z)
-            obj.plotprop(x2,y2,z)
+            obj.plotprop(x2,y2, z)
         end
         
         function plotprop(obj, x, y, z)
