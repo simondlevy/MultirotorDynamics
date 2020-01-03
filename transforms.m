@@ -1,4 +1,4 @@
-% Geometrics transforms library
+% Geometric transforms library
 %
 % Copyright (C) 2019 Simon D. Levy
 %
@@ -56,6 +56,10 @@ classdef transforms
                 cph * sth * sps - sph * cth * cps, ...
                 -cph * sth * cps - sph * cth * sps, ...
                 cph * cth * sps - sph * sth * cps];
+        end
+        
+        function r = rotation(phi, theta, psi)
+            r = [];
         end
         
     end % public static methods
