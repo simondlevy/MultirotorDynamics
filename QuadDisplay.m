@@ -29,14 +29,20 @@ classdef QuadDisplay
         
         function show(obj, x, y, z, phi, theta, psi)
             
-            obj.plotarm(x, y, z, -1, -1, +1, +1)
+            h = [];
+            h = [h,obj.plotarm(x, y, z, -1, -1, +1, +1)];
             hold on
-            obj.plotarm(x, y, z, -1, +1, +1, -1)
-            
+            h = [h,obj.plotarm(x, y, z, -1, +1, +1, -1)];
+                        
             % Erase previous plot
             hold off
-            
+             
             axis([-obj.WORLD_SIZE obj.WORLD_SIZE -obj.WORLD_SIZE obj.WORLD_SIZE 0 obj.WORLD_SIZE])
+            
+            
+            fprintf('%f\n', psi*180/pi)
+            rotate(h, [0 0 1], psi*180/pi)
+
             drawnow
         end
         
@@ -44,23 +50,23 @@ classdef QuadDisplay
     
     methods(Access=private)
         
-        function plotarm(obj, x, y, z, dx1,dy1, dx2, dy2)
+        function h = plotarm(obj, x, y, z, dx1,dy1, dx2, dy2)
             x1 = x+dx1*obj.d;
             x2 = x+dx2*obj.d;
             y1 = y+dy1*obj.d;
             y2 = y+dy2*obj.d;
-            plot3([x1,x2], [y1,y2], [z,z], obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH)
-            obj.plotprop(x1,y1,z)
-            obj.plotprop(x2,y2, z)
+            h = plot3([x1,x2], [y1,y2], [z,z], obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH);
+            h = [h, obj.plotprop(x1, y1, z)];
+            h = [h, obj.plotprop(x2, y2, z)];
         end
         
-        function plotprop(obj, x, y, z)
+        function h = plotprop(obj, x, y, z)
             hold on
             th = 0:pi/50:2*pi;
             xunit = obj.PROPELLER_RADIUS * cos(th) + x;
             yunit = obj.PROPELLER_RADIUS * sin(th) + y;
             zunit = z * ones(size(xunit));
-            plot3(xunit, yunit, zunit, obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH);
+            h = plot3(xunit, yunit, zunit, obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH);
             hold off
         end
         
