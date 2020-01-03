@@ -29,9 +29,9 @@ classdef QuadDisplay
         
         function show(obj, x, y, z, phi, theta, psi)
             
-            obj.plotarm(x, y, z, -1, -1, +1, +1, phi, theta, psi)
+            obj.plotarm(x, y, z, -1, -1, +1, +1)
             hold on
-            obj.plotarm(x, y, z, -1, +1, +1, -1, phi, theta, psi)
+            obj.plotarm(x, y, z, -1, +1, +1, -1)
             
             % Erase previous plot
             hold off
@@ -44,7 +44,7 @@ classdef QuadDisplay
     
     methods(Access=private)
         
-        function plotarm(obj, x, y, z, dx1,dy1, dx2, dy2, phi, theta, psi)
+        function plotarm(obj, x, y, z, dx1,dy1, dx2, dy2)
             x1 = x+dx1*obj.d;
             x2 = x+dx2*obj.d;
             y1 = y+dy1*obj.d;
