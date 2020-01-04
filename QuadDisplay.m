@@ -28,20 +28,20 @@ classdef QuadDisplay
         end
         
         function show(obj, x, y, z, phi, theta, psi)
+            % Angles in radians
             
             h = [];
             h = [h,obj.plotarm(x, y, z, -1, -1, +1, +1)];
             hold on
             h = [h,obj.plotarm(x, y, z, -1, +1, +1, -1)];
                         
-            % Erase previous plot
             hold off
              
             axis([-obj.WORLD_SIZE obj.WORLD_SIZE -obj.WORLD_SIZE obj.WORLD_SIZE 0 obj.WORLD_SIZE])
             
-            rotate(h, [0 0 1], psi*180/pi)
-            rotate(h, [1 0 0], phi*180/pi)
-            rotate(h, [0 1 0], theta*180/pi)
+            rotate(h, [0 0 1], rad2deg(psi))
+            rotate(h, [1 0 0], rad2deg(phi))
+            rotate(h, [0 1 0], rad2deg(theta))
 
             drawnow
         end
