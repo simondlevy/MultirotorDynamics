@@ -10,7 +10,7 @@ qd = QuadDisplay;
 
 for k =1:50
     
-    qd.show(0, 0, 5, 0, 0, k*pi/N)
+    qd.show(0, 0, 5, k*pi/N, 0, 0)
     
     pause(.01)
     

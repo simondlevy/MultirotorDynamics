@@ -39,9 +39,9 @@ classdef QuadDisplay
              
             axis([-obj.WORLD_SIZE obj.WORLD_SIZE -obj.WORLD_SIZE obj.WORLD_SIZE 0 obj.WORLD_SIZE])
             
-            
-            fprintf('%f\n', psi*180/pi)
             rotate(h, [0 0 1], psi*180/pi)
+            rotate(h, [1 0 0], phi*180/pi)
+            rotate(h, [0 1 0], theta*180/pi)
 
             drawnow
         end
