@@ -1,4 +1,4 @@
-<img src="image2.png" width="400">
+<img src="image2.png" align="left" width="400">
 <img src="takeoff.gif" width="400">
 
 
