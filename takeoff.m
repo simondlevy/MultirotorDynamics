@@ -2,16 +2,17 @@
 %
 % Usage:
 %
-%
 %   takeoff(dur, dt) runs for DUR seconds with an update period of DT seconds
 %
-%   takeoff(dt, dur, file) also saves the results to a MAT file
+% Returns:
 %
+%   Tx7 matrix of kinematic time slices, with time in first column
+% 
 % Copyright (C) 2019 Simon D. Levy
 %
 % MIT License
 
-function takeoff(dur, dt, csvlog)
+function kine = takeoff(dur, dt, csvlog)
 
     % Simulation params
     ALTITUDE_TARGET = 10;
@@ -24,7 +25,7 @@ function takeoff(dur, dt, csvlog)
 
     % Time constant
     if nargin < 2
-        fprintf('Usage: takeoff(dur, dt, [file]\n')
+        fprintf('Usage: takeoff(dur, dt)\n')
         return
     end
 
@@ -86,8 +87,6 @@ function takeoff(dur, dt, csvlog)
 
     % Clsoe the wait-bar
     close(wb)
-
-    kine(n-100:n,:)
 
     % Plot results, negating Z to convert NED => ENU
     tvals = kine(:,1);
