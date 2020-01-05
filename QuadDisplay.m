@@ -40,8 +40,8 @@ classdef QuadDisplay
             axis([-obj.WORLD_SIZE obj.WORLD_SIZE -obj.WORLD_SIZE obj.WORLD_SIZE 0 obj.WORLD_SIZE])
             
             rotate(h, [0 0 1], rad2deg(psi))
-            rotate(h, [1 0 0], rad2deg(phi))
             rotate(h, [0 1 0], rad2deg(theta))
+            rotate(h, [1 0 0], rad2deg(phi))
 
             drawnow
         end
