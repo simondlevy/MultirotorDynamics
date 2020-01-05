@@ -8,11 +8,12 @@ classdef QuadDisplay
     
     properties(Constant, Access=private)
         
-        WORLD_SIZE           = 10;
-        VEHICLE_SIZE         = 3;
-        VEHICLE_COLOR        = 'r';
-        VEHICLE_LINEWIDTH    = 2;
-        PROPELLER_RADIUS     = 0.5;
+        WORLD_SIZE        = 10;
+        VEHICLE_SIZE      = 3;
+        VEHICLE_COLOR     = 'r';
+        VEHICLE_LINEWIDTH = 2;
+        PROPELLER_RADIUS  = 0.5;
+        PROPELLER_OFFSET  = 0.1;
         
     end
     
@@ -65,7 +66,7 @@ classdef QuadDisplay
             th = 0:pi/50:2*pi;
             xunit = obj.PROPELLER_RADIUS * cos(th) + x;
             yunit = obj.PROPELLER_RADIUS * sin(th) + y;
-            zunit = z * ones(size(xunit));
+            zunit = (z+obj.PROPELLER_OFFSET) * ones(size(xunit));
             h = plot3(xunit, yunit, zunit, obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH);
             hold off
         end
