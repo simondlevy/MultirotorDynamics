@@ -29,7 +29,7 @@ classdef QuadDisplay
         
         function show(obj, x, y, z, phi, theta, psi)
             % Angles in radians
-            
+                        
             h = [];
             h = [h,obj.plotarm(x, y, z, -1, -1, +1, +1)];
             hold on

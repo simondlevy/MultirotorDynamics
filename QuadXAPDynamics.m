@@ -30,7 +30,7 @@ classdef QuadXAPDynamics < MultirotorDynamics
        
         function f = u4(~,  o)
             % yaw cw
-            f = sum(o);
+            f = (o(2) + o(4)) -  (o(1) + o(3));
         end
 
         function d = motorDirection(i)
