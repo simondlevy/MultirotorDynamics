@@ -8,7 +8,7 @@ extended to work with general multi-copter (quad, hex, octo) configurations.
 
 Launch Matlab, change your working directory to where you installed this repository, and do
 ```
-  >> takeoff
+  >> takeoff(10, .001);
 ```
 
 This will run a simple [PID controller](https://en.wikipedia.org/wiki/PID_controller) to make a simulated 
