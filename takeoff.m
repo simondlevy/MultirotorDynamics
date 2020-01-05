@@ -1,100 +1,127 @@
 % Run simple altitude-hold PID controller to test dynamics
 %
+% Usage:
+%
+%
+%   takeoff(dt) runs with an update period of DT seconds
+%
+%   takeoff(dt, csvlog) also saves the results to file CSVLOG
+%
+%   takeoff displays in real time
+%
 % Copyright (C) 2019 Simon D. Levy
 %
 % MIT License
 
-% Simulation params
-ALTITUDE_TARGET = 10;
-DURATION        = 40; % seconds
+function takeoff(dt, csvlog)
 
-% PID params
-ALT_P = 1.0;
-VEL_P = 1.0;
-VEL_I = 0;
-VEL_D = 0;
+    % Simulation params
+    ALTITUDE_TARGET = 10;
+    DURATION        = 40; % seconds
 
-% Time constant
-DT = 0.001;
+    % PID params
+    ALT_P = 1.0;
+    VEL_P = 1.0;
+    VEL_I = 0;
+    VEL_D = 0;
 
-% Create PID controller
-pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
-
-% Create dynamics
-dyn = DjiPhantomDynamics;
-
-% Create plot object
-q = QuadDisplay;
-
-% Initialize arrays for plotting
-tvals = [];
-uvals = [];
-zvals = [];
-vvals = [];
-
-% Motors are initially off
-u = 0;
-
-% Start timing
-tprev = 0;
-tic
-
-% Loop for duration
-while tprev < DURATION
-    
-    % Set all the motors to the value obtained from the PID controller
-    dyn = dyn.setMotors(u*ones(1,4));
-    
-    % Update the dynamics
-    dyn = dyn.update(.001);
-    
-    % Get the current vehicle state vector
-    s = dyn.getState();
-    
-    % Extract values from state vector, negating to handle NED coordinate system
-    phi   =  s(MultirotorDynamics.STATE_PHI);
-    theta =  s(MultirotorDynamics.STATE_THETA);
-    psi   =  s(MultirotorDynamics.STATE_PSI);
-    x     =  s(MultirotorDynamics.STATE_X);
-    y     =  s(MultirotorDynamics.STATE_Y);
-    z     = -s(MultirotorDynamics.STATE_Z);
-    v     = -s(MultirotorDynamics.STATE_Z_DOT);
-    
-    % Show the vehicle
-    q.show(x, y, z, phi, theta, psi)
-    
-    % Update the timer
-    t = toc;
-    dt = t - tprev;
-    tprev = t;
-    
-    % Get correction from PID controller
-    if dt > 0
-        u = pid.u(z, v, dt);
+    % Time constant
+    if nargin < 1
+        dt = 0;
+        q = QuadDisplay;
     end
-    
-    % Constrain correction to [0,1] to represent motor value
-    u = max(0, min(1, u));
-    
-    % Track values
-    tvals = [tvals, t];
-    zvals = [zvals, z];
-    vvals = [vvals, v];
-    uvals = [uvals, u];
-    
-end
 
-% Plot results
-%figure
-make_subplot(tvals, zvals, 1, 'Altitude (m)', [0 ALTITUDE_TARGET+1])
-make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
-make_subplot(tvals, uvals, 3, 'Motors', [-.1,1.1])
+    % Create PID controller
+    pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
+
+    % Create dynamics
+    dyn = DjiPhantomDynamics;
+
+    % Initialize arrays for plotting
+    tvals = [];
+    uvals = [];
+    zvals = [];
+    vvals = [];
+
+    % Motors are initially off
+    u = 0;
+
+    % Start timing
+    t = 0;
+    tprev = 0;
+    tic
+
+    f = waitbar(DURATION, 'Time')
+
+    % Loop for duration
+    while t < DURATION
+
+        % Set all the motors to the value obtained from the PID controller
+        dyn = dyn.setMotors(u*ones(1,4));
+
+        % Update the dynamics
+        dyn = dyn.update(.001);
+
+        % Get the current vehicle state vector
+        s = dyn.getState();
+
+        % Extract values from state vector, negating to handle NED coordinate system
+        phi   =  s(MultirotorDynamics.STATE_PHI);
+        theta =  s(MultirotorDynamics.STATE_THETA);
+        psi   =  s(MultirotorDynamics.STATE_PSI);
+        x     =  s(MultirotorDynamics.STATE_X);
+        y     =  s(MultirotorDynamics.STATE_Y);
+        z     = -s(MultirotorDynamics.STATE_Z);
+        v     = -s(MultirotorDynamics.STATE_Z_DOT);
+
+        if nargin > 0
+            t = t + dt;
+        else
+
+            % Update the timer
+            t = toc;
+            dt = t - tprev;
+            tprev = t;
+
+            % Show the vehicle
+            q.show(x, y, z, phi, theta, psi)
+        end
+
+        waitbar(t, f)
+
+        fprintf('%f\n', t)
+
+        % Get correction from PID controller
+        if dt > 0
+            u = pid.u(z, v, dt);
+        end
+
+        % Constrain correction to [0,1] to represent motor value
+        u = max(0, min(1, u));
+
+        % Track values
+        tvals = [tvals, t];
+        zvals = [zvals, z];
+        vvals = [vvals, v];
+        uvals = [uvals, u];
+
+    end
+
+    close(f)
+
+    % Plot results
+    %figure
+    make_subplot(tvals, zvals, 1, 'Altitude (m)', [0 ALTITUDE_TARGET+1])
+    make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
+    make_subplot(tvals, uvals, 3, 'Motors', [-.1,1.1])
+
+end
 
 function make_subplot(t, x, k, label, ylims)
-subplot(3,1,k)
-plot(t, x)
-ylabel(label)
-if nargin > 4
-    ylim(ylims)
-end
+    subplot(3,1,k)
+    plot(t, x)
+    ylabel(label)
+    if nargin > 4
+        ylim(ylims)
+    end
 end
