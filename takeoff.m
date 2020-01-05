@@ -6,7 +6,7 @@
 
 % Simulation params
 ALTITUDE_TARGET = 10;
-DURATION        = 40; % secondsf
+DURATION        = 40; % seconds
 
 % PID params
 ALT_P = 1.0;
@@ -86,13 +86,15 @@ end
 
 % Plot results
 %figure
-%make_subplot(tvals, zvals, 1, 'Altitude (m)')
-%make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
-%make_subplot(tvals, uvals, 3, 'Motors')
-%ylim([-.1,1.1])
+make_subplot(tvals, zvals, 1, 'Altitude (m)', [0 ALTITUDE_TARGET+1])
+make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
+make_subplot(tvals, uvals, 3, 'Motors', [-.1,1.1])
 
-function make_subplot(t, x, k, label)
+function make_subplot(t, x, k, label, ylims)
 subplot(3,1,k)
 plot(t, x)
 ylabel(label)
+if nargin > 4
+    ylim(ylims)
+end
 end
