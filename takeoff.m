@@ -3,21 +3,20 @@
 % Usage:
 %
 %
-%   takeoff(dt) runs with an update period of DT seconds
+%   takeoff(dur, dt) runs for DUR seconds with an update period of DT seconds
 %
-%   takeoff(dt, csvlog) also saves the results to file CSVLOG
+%   takeoff(dt, dur, csvlog) also saves the results to file CSVLOG
 %
-%   takeoff displays in real time
+%   takeoff(dur) displays in real time
 %
 % Copyright (C) 2019 Simon D. Levy
 %
 % MIT License
 
-function takeoff(dt, csvlog)
+function takeoff(dur, dt, csvlog)
 
     % Simulation params
     ALTITUDE_TARGET = 10;
-    DURATION        = 40; % seconds
 
     % PID params
     ALT_P = 1.0;
@@ -27,8 +26,13 @@ function takeoff(dt, csvlog)
 
     % Time constant
     if nargin < 1
+        fprintf('Usage: takeoff(duration, [dt], [csvlog]\n')
+        return
+    elseif nargin < 2
         dt = 0;
         q = QuadDisplay;
+    else
+        f = waitbar(0);
     end
 
     % Create PID controller
@@ -51,11 +55,9 @@ function takeoff(dt, csvlog)
     tprev = 0;
     tic
 
-    f = waitbar(DURATION, 'Time')
-
     % Loop for duration
-    while t < DURATION
-
+    while t < dur
+        
         % Set all the motors to the value obtained from the PID controller
         dyn = dyn.setMotors(u*ones(1,4));
 
@@ -74,8 +76,11 @@ function takeoff(dt, csvlog)
         z     = -s(MultirotorDynamics.STATE_Z);
         v     = -s(MultirotorDynamics.STATE_Z_DOT);
 
-        if nargin > 0
+        msg = sprintf('%3.2f/%3.2f sec', t, dur);
+
+        if nargin > 1
             t = t + dt;
+            waitbar(t/dur, f, msg)
         else
 
             % Update the timer
@@ -84,13 +89,10 @@ function takeoff(dt, csvlog)
             tprev = t;
 
             % Show the vehicle
-            q.show(x, y, z, phi, theta, psi)
+            q.show(x, y, z, phi, theta, psi, msg)
+
         end
-
-        waitbar(t, f)
-
-        fprintf('%f\n', t)
-
+        
         % Get correction from PID controller
         if dt > 0
             u = pid.u(z, v, dt);
@@ -107,7 +109,9 @@ function takeoff(dt, csvlog)
 
     end
 
-    close(f)
+    if nargin > 1
+        close(f)
+    end
 
     % Plot results
     %figure

@@ -69,8 +69,3 @@ classdef AltitudePidController
     end
     
 end % classdef
-
-
-
-
-
