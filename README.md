@@ -1,5 +1,5 @@
-<img src="image2.png" align="left">
-<img src="takeoff.gif" align="right">
+<img src="image2.png" width="400" align="left">
+<img src="takeoff.gif" width="400" align="right">
 
 This folder contains a Matlab implementation of the quadcopter dynamics equations in
 ([Bouabdallah et al. 2004](https://infoscience.epfl.ch/record/97532/files/325.pdf)),
