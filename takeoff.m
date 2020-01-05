@@ -24,12 +24,9 @@ function takeoff(dur, dt, csvlog)
 
     % Time constant
     if nargin < 2
-        fprintf('Usage: takeoff(duration, [dt]\n')
+        fprintf('Usage: takeoff(dur, dt, [file]\n')
         return
     end
-
-    % Create a wait-bar to display progress
-    wb = waitbar(0);
 
     % Create PID controller
     pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
@@ -37,17 +34,23 @@ function takeoff(dur, dt, csvlog)
     % Create dynamics
     dyn = DjiPhantomDynamics;
 
-    % Initialize arrays for plotting
-    tvals = linspace(0, dur, dur*1/dt);
-    uvals = zeros(size(tvals));
-    zvals = zeros(size(tvals));
-    vvals = zeros(size(tvals));
+    % Initialize array of kinematic data
+    n = dur * 1/dt;
+    kine = zeros(n,7);
+    kine(:,1) = linspace(0, dur, n); % time
+
+    % Initialize plot data
+    uvals = zeros(1,n);
+    vvals = zeros(1,n);
 
     % Motors are initially off
     u = 0;
 
+    % Create a wait-bar to display progress
+    wb = waitbar(0);
+
     % Loop for duration
-    for k = 1:length(tvals)
+    for k = 1:n
         
         % Set all the motors to the value obtained from the PID controller
         dyn = dyn.setMotors(u*ones(1,4));
@@ -58,17 +61,15 @@ function takeoff(dur, dt, csvlog)
         % Get the current vehicle state vector
         s = dyn.getState();
 
-        % Extract values from state vector, negating to handle NED coordinate system
-        phi   =  s(MultirotorDynamics.STATE_PHI);
-        theta =  s(MultirotorDynamics.STATE_THETA);
-        psi   =  s(MultirotorDynamics.STATE_PSI);
-        x     =  s(MultirotorDynamics.STATE_X);
-        y     =  s(MultirotorDynamics.STATE_Y);
-        z     = -s(MultirotorDynamics.STATE_Z);
-        v     = -s(MultirotorDynamics.STATE_Z_DOT);
+        % Extract kinematic state from state vector
+        kine(k,2:7) = s(MultirotorDynamics.STATE_X:2:MultirotorDynamics.STATE_PSI);
+
+        % Negate Z and dZ/dt to convert NED => ENU
+        z = -s(MultirotorDynamics.STATE_Z);
+        v = -s(MultirotorDynamics.STATE_Z_DOT);
 
         % Update the wait-bar
-        t = tvals(k);
+        t = kine(k,1);
         waitbar(t/dur, wb, sprintf('%3.2f/%3.2f sec', t, dur))
         
         % Get correction from PID controller
@@ -78,7 +79,6 @@ function takeoff(dur, dt, csvlog)
         u = max(0, min(1, u));
 
         % Track values
-        zvals(k) = z;
         vvals(k) = v;
         uvals(k) = u;
 
@@ -87,8 +87,11 @@ function takeoff(dur, dt, csvlog)
     % Clsoe the wait-bar
     close(wb)
 
-    % Plot results
-    make_subplot(tvals, zvals, 1, 'Altitude (m)', [0 ALTITUDE_TARGET+1])
+    kine(n-100:n,:)
+
+    % Plot results, negating Z to convert NED => ENU
+    tvals = kine(:,1);
+    make_subplot(tvals, -kine(:,4), 1, 'Altitude (m)', [0 ALTITUDE_TARGET+1])
     make_subplot(tvals, vvals, 2, 'Velocity (m/s)')
     make_subplot(tvals, uvals, 3, 'Motors', [-.1,1.1])
 
