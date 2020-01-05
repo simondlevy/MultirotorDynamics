@@ -28,7 +28,7 @@ classdef QuadDisplay
             obj.d = sqrt(s^2/2);
         end
         
-        function show(obj, x, y, z, phi, theta, psi, msg)
+        function show(obj, x, y, z, phi, theta, psi)
             % Angles in radians
                         
             h = [];
@@ -43,10 +43,6 @@ classdef QuadDisplay
             rotate(h, [0 0 1], rad2deg(psi))
             rotate(h, [0 1 0], rad2deg(theta))
             rotate(h, [1 0 0], rad2deg(phi))
-
-            if nargin > 6
-                title(msg)
-            end
 
             drawnow
 
