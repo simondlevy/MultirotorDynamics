@@ -20,7 +20,7 @@ function playback(a, aviname)
     k = 1;
 
     if nargin > 1
-        vw = VideoWrite(aviname);
+        vw = VideoWriter(aviname);
         open(vw);
     end
 
