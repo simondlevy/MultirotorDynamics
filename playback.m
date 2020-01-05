@@ -22,7 +22,16 @@ function playback(a, aviname)
     if nargin > 1
         vw = VideoWriter(aviname);
         open(vw);
+    else
+        vw = [];
     end
+
+    tic
+    %while toc < 2
+    %    qdshow(qd, 1, a, vw)
+    %end
+
+    %tic
 
     % Loop through the time values, interpolating as we go
     while true
@@ -41,25 +50,25 @@ function playback(a, aviname)
         end
 
         % Display the current frame
-        qdshow(qd, k, a)
-
-        % Write to video file if indicated
-        if nargin > 1
-            writeVideo(vw, getframe(gcf));
-        end
+        qdshow(qd, k, a, vw)
 
     end
 
     % Display the final frame
-    qdshow(qd, length(a), a)
+    qdshow(qd, length(a), a, vw)
 
     % Cleanup
-    if nargin > 1
+    if ~isempty(vw)
         close(vw);
     end
 
 end
 
-function qdshow(qd, k, a)
+function qdshow(qd, k, a, vw)
+
     qd.show(a(k, 2), a(k,3), -a(k,4), a(k,5), a(k,6), a(k,7), sprintf('t=%3.2f/%3.2f', a(k,1), a(end,1)))
+
+    if ~isempty(vw)
+        writeVideo(vw, getframe(gcf));
+    end
 end
