@@ -1,10 +1,10 @@
-% Function to display a quadcopter in 3D
+% Function to display a multicopter in 3D
 %
 % Copyright (C) 2019 Simon D. Levy
 %
 % MIT License
 
-classdef QuadDisplay
+classdef VehicleDisplay
     
     properties(Constant, Access=private)
         
@@ -23,7 +23,7 @@ classdef QuadDisplay
     
     methods(Access=public)
         
-        function obj = QuadDisplay
+        function obj = VehicleDisplay
             s = obj.VEHICLE_SIZE / 2;
             obj.d = sqrt(s^2/2);
         end

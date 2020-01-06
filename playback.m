@@ -11,7 +11,7 @@
 function playback(a, aviname)
 
     % Set up a quadcopter display
-    qd = QuadDisplay;
+    veh = VehicleDisplay;
 
     % Start timing
     tic
@@ -19,6 +19,7 @@ function playback(a, aviname)
     % Start at first frame
     k = 1;
 
+    % Open a video output file if indicated
     if nargin > 1
         vw = VideoWriter(aviname);
         open(vw);
@@ -26,12 +27,8 @@ function playback(a, aviname)
         vw = [];
     end
 
+    % Start timing
     tic
-    %while toc < 2
-    %    qdshow(qd, 1, a, vw)
-    %end
-
-    %tic
 
     % Loop through the time values, interpolating as we go
     while true
@@ -50,12 +47,12 @@ function playback(a, aviname)
         end
 
         % Display the current frame
-        qdshow(qd, k, a, vw)
+        vehshow(veh, k, a, vw)
 
     end
 
     % Display the final frame
-    qdshow(qd, length(a), a, vw)
+    vehshow(veh, length(a), a, vw)
 
     % Cleanup
     if ~isempty(vw)
@@ -64,9 +61,9 @@ function playback(a, aviname)
 
 end
 
-function qdshow(qd, k, a, vw)
+function vehshow(veh, k, a, vw)
 
-    qd.show(a(k, 2), a(k,3), -a(k,4), a(k,5), a(k,6), a(k,7), sprintf('t=%3.2f/%3.2f', a(k,1), a(end,1)))
+    veh.show(a(k, 2), a(k,3), -a(k,4), a(k,5), a(k,6), a(k,7), sprintf('t=%3.2f/%3.2f', a(k,1), a(end,1)))
 
     if ~isempty(vw)
         writeVideo(vw, getframe(gcf));
