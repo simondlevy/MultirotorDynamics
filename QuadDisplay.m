@@ -8,13 +8,13 @@ classdef QuadDisplay
     
     properties(Constant, Access=private)
         
-        WORLD_SIZE        = 10;
         VEHICLE_SIZE      = 3;
-        VEHICLE_COLOR     = 'r';
-        VEHICLE_LINEWIDTH = 2;
         PROPELLER_RADIUS  = 0.5;
         PROPELLER_OFFSET  = 0.1;
         
+        WORLD_SIZE        = 10;
+        VEHICLE_COLOR     = 'r';
+        VEHICLE_LINEWIDTH = 2;
     end
     
     properties(Access=private)
