@@ -28,7 +28,7 @@ The takeoff script returns an array of kinematic frames consisting of the curren
 
 ## Related projects
 
-[gym-copter](https://github.com/simondlevy/levy/gym-copter)
+[gym-copter](https://github.com/simondlevy/gym-copter)
 
-[MulticopterSim](https://github.com/simondlevy/levy/MulticopterSim)
+[MulticopterSim](https://github.com/simondlevy/MulticopterSim)
 
