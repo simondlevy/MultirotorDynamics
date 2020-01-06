@@ -3,6 +3,8 @@
 % Usage:
 %
 %   playback(a) where A is an Nx7 matrix of kinematic data
+%
+%   playback(a, aviname) also saves the movie to file AVINAME
 % 
 % Copyright (C) 2019 Simon D. Levy
 %
