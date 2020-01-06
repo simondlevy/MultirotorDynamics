@@ -25,3 +25,10 @@ The takeoff script returns an array of kinematic frames consisting of the curren
   >> a = takeoff(10, .001);
   >> playback(a)
 ```
+
+## Related projects
+
+[gym-copter](https://github.com/simondlevy/levy/gym-copter)
+
+[MulticopterSim](https://github.com/simondlevy/levy/MulticopterSim)
+
