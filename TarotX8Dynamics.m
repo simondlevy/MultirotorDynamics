@@ -2,7 +2,6 @@
 %
 % (Approximated for now)
 %
-%
 % Copyright (C) 2020 Simon D. Levy
 %
 % MIT License
