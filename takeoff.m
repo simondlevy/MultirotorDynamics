@@ -4,6 +4,8 @@
 %
 %   takeoff(dur, dt) runs for DUR seconds with an update period of DT seconds
 %
+%   takeoff(dur, dt, dyn) allows you to specify the dynamics (default = DJI Phantom)
+%
 % Returns:
 %
 %   Tx7 matrix of kinematic time slices, with time in first column
@@ -12,7 +14,7 @@
 %
 % MIT License
 
-function kine = takeoff(dur, dt)
+function kine = takeoff(dur, dt, dyn)
 
     % Simulation params
     ALTITUDE_TARGET = 10;
@@ -32,8 +34,10 @@ function kine = takeoff(dur, dt)
     % Create PID controller
     pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
-    % Create dynamics
-    dyn = TarotX8Dynamics; %DjiPhantomDynamics;
+    % Default to DJI Phantom dynamics
+    if nargin < 3
+        dyn = DjiPhantomDynamics;
+    end
 
     % Initialize array of kinematic data
     n = dur * 1/dt;
