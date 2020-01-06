@@ -47,11 +47,14 @@ classdef (Abstract) MultirotorDynamics
         
     end
     
+    properties (Access=public)
+        motorCount;
+    end
+            
     properties (Access=private)
         
         % instance variables
         params;
-        motorCount;
         
         omegas;
         

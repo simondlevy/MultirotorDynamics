@@ -12,7 +12,7 @@
 %
 % MIT License
 
-function kine = takeoff(dur, dt, csvlog)
+function kine = takeoff(dur, dt)
 
     % Simulation params
     ALTITUDE_TARGET = 10;
@@ -33,7 +33,7 @@ function kine = takeoff(dur, dt, csvlog)
     pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
     % Create dynamics
-    dyn = DjiPhantomDynamics;
+    dyn = TarotX8Dynamics; %DjiPhantomDynamics;
 
     % Initialize array of kinematic data
     n = dur * 1/dt;
@@ -54,7 +54,7 @@ function kine = takeoff(dur, dt, csvlog)
     for k = 1:n
         
         % Set all the motors to the value obtained from the PID controller
-        dyn = dyn.setMotors(u*ones(1,4));
+        dyn = dyn.setMotors(u*ones(1,dyn.motorCount));
 
         % Update the dynamics
         dyn = dyn.update(dt);

@@ -20,7 +20,7 @@ classdef TarotX8Dynamics < OctoXAPDynamics
               params.Ix = 0.15;         % [kg*m^2]
               params.Iy = 0.15;         % [kg*m^2]
               params.Iz = 0.20;         % [kg*m^2]
-              params.Jr = 2.765168e-05, % prop inertia [kg*m^2]
+              params.Jr = 2.765168e-05; % prop inertia [kg*m^2]
 
               params.maxrpm = 6875;  
                         

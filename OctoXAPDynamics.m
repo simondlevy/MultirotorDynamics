@@ -15,21 +15,32 @@
 % MIT License
 
 classdef OctoXAPDynamics < MultirotorDynamics
+    
+    properties(Access=private)
+        C1;
+        C2;
+    end
   
     methods
 
-        function obj = OctoXAPDynamics(params)
+        function obj = OctoXAPDynamics(params, C1, C2)
             obj = obj@MultirotorDynamics(params, 8);
+            if nargin < 2
+                C1 = 1;
+                C2 = 1;
+            end
+            obj.C1 = C1;
+            obj.C2 = C2;
         end
 
-        function f = u2(~,  o)
+        function f = u2(obj,  o)
             % roll right
-            f =  (C1*o(2) + C1*o(5) + C2*o(6) + C2*o(7)) - (C1*o(1) + C2*o(3) + C1*o(4) + C2*o(8));
+            f =  (obj.C1*o(2) + obj.C1*o(5) + obj.C2*o(6) + obj.C2*o(7)) - (obj.C1*o(1) + obj.C2*o(3) + obj.C1*o(4) + obj.C2*o(8));
         end
        
-        function f = u3(~,  o)
+        function f = u3(obj,  o)
             % pitch forward
-            f = (C2*o(2) + C2*o(4) + C1*o(6) + C1*o(8)) - (C2*o(1) + C1*o(3) + C2*o(5) + C1*o(7));
+            f = (obj.C2*o(2) + obj.C2*o(4) + obj.C1*o(6) + obj.C1*o(8)) - (obj.C2*o(1) + obj.C1*o(3) + obj.C2*o(5) + obj.C1*o(7));
         end
        
         function f = u4(~,  o)
