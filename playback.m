@@ -49,12 +49,12 @@ function playback(a, aviname)
         end
 
         % Display the current frame
-        vehshow(veh, k, a, vw)
+        showvehicle(veh, k, a, vw)
 
     end
 
     % Display the final frame
-    vehshow(veh, length(a), a, vw)
+    showvehicle(veh, length(a), a, vw)
 
     % Cleanup
     if ~isempty(vw)
@@ -63,9 +63,16 @@ function playback(a, aviname)
 
 end
 
-function vehshow(veh, k, a, vw)
+function showvehicle(veh, k, a, vw)
 
-    veh.show(a(k, 2), a(k,3), -a(k,4), a(k,5), a(k,6), a(k,7), sprintf('t=%3.2f/%3.2f', a(k,1), a(end,1)))
+    x     =  a(k,2);
+    y     =  a(k,3);
+    z     = -a(k,4); % NED => ENU
+    phi   =  a(k,5);
+    theta =  a(k,6);
+    psi   =  a(k,7);
+    veh.show(x, y, z, phi, theta, psi, ...
+        sprintf('t=%3.2f/%3.2f  x=%+3.2f  y=%+3.2f  z=%3.2f', a(k,1), a(end,1), x, y, z))
 
     if ~isempty(vw)
         writeVideo(vw, getframe(gcf));
