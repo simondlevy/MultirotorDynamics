@@ -24,7 +24,7 @@ classdef AltitudePidController
         
     end
     
-    methods
+    methods (Access=public)
         
         function obj = AltitudePidController(target, posP, velP, velI, velD, windupMax)
             
