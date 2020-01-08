@@ -1,3 +1,9 @@
+% Simple PID controller for takeoff / altitude-hold
+% 
+% Copyright (C) 2019 Simon D. Levy
+% 
+% MIT License
+
 classdef AltitudePidController
     
     properties (Access=private)
