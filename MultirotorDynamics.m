@@ -135,6 +135,10 @@ classdef MultirotorDynamics
         function c = motorCount(obj)
             c = length(obj.mixer);
         end
+
+        function r = rollMixer(obj)
+            r = obj.mixer(:,1)';
+        end
         
     end 
     
