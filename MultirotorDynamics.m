@@ -23,7 +23,7 @@
 %
 % MIT License
 
-classdef (Abstract) MultirotorDynamics
+classdef MultirotorDynamics
     % Abstract class for multirotor dynamics.
     
     properties(Constant, Access=public)
@@ -47,16 +47,11 @@ classdef (Abstract) MultirotorDynamics
         
     end
     
-    properties (Access=public)
-        motorCount;
-    end
-            
     properties (Access=private)
         
-        % instance variables
+        % A frame is defined by its mixer and parameters
+        mixer;
         params;
-        
-        omegas;
         
         % Always start at location (0,0,0) with zero velocities
         x;
@@ -77,72 +72,26 @@ classdef (Abstract) MultirotorDynamics
         
     end
     
-    methods (Abstract)
-        
-        % roll right
-        u2(obj, omega2)
-        
-        % pitch forward
-        u3(obj, omega2)
-        
-        % yaw cw
-        u4(obj, omega2)
-        
-    end
-    
     methods (Access=public)
-        
-        function obj = MultirotorDynamics(params, motorCount, airborne)
-            % Constructor
-            % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
-            % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
-            
-            if nargin < 3
-                airborne = true;
-            end
-            
-            obj.params = params;
-            obj.motorCount = motorCount;
-            
-            obj.omegas  = zeros(1, motorCount);
-            
-            % Always start at location (0,0,0) with zero velocities
-            obj.x    = zeros(1, 12);
-            obj.dxdt = zeros(1, 12);
-                        
-            % Values computed in Equation 6
-            obj.U1 = 0;     % total thrust
-            obj.U2 = 0;     % roll thrust right
-            obj.U3 = 0;     % pitch thrust forward
-            obj.U4 = 0;     % yaw thrust clockwise
-            obj.Omega = 0;  % torque clockwise
-            
-            % Initialize inertial frame acceleration in NED coordinates
-            obj.inertialAccel = transforms.bodyZToInertiall(-obj.g, [0,0,0]);
-            
-            % We usuall start on ground, but can start in air for testing
-            obj.airborne = airborne;
-            
-        end
         
         function obj = setMotors(obj, motorvals)
             % Uses motor values to implement Equation 6.
             % motorvals in interval [0,1]
                         
             % Convert the  motor values to radians per second
-            obj.omegas = obj.computeMotorSpeed(motorvals); % rad/s
+            omegas = motorvals * obj.params.maxrpm * pi / 30;
                         
             % Compute overall torque from omegas before squaring
-            obj.Omega = obj.u4(obj.omegas);
-                        
+            obj.Omega = sum(obj.mixer(:,3)' .* omegas);
+                                                                        
             % Overall thrust is sum of squared omegas
-            omegas2 = obj.omegas.^2;
-            obj.U1 = sum(obj.params.b * omegas2);
+            omegas2 = omegas.^2;
+            obj.U1 = obj.params.b * sum(omegas2);
 
             % Use the squared Omegas to implement the rest of Eqn. 6
-            obj.U2 = obj.params.l * obj.params.b * obj.u2(omegas2);
-            obj.U3 = obj.params.l * obj.params.b * obj.u3(omegas2);
-            obj.U4 = obj.params.d * obj.u4(omegas2);
+            obj.U2 = obj.params.l * obj.params.b * sum(obj.mixer(:,1)' .* omegas2);
+            obj.U3 = obj.params.l * obj.params.b * sum(obj.mixer(:,2)' .* omegas2);
+            obj.U4 = obj.params.d * sum(obj.mixer(:,3)' .* omegas2);
                         
         end
         
@@ -182,15 +131,49 @@ classdef (Abstract) MultirotorDynamics
             % Returns a copy of the state vector as a tuple
             s = obj.x;
         end
-        
-    end % instance methods
-    
-    methods(Access=private)
-        
-        function s = computeMotorSpeed(obj, motorvals)
-            % Computes motor speed (rad/s) based on motor value in [0,1]
-            s = motorvals * obj.params.maxrpm * pi / 30;
+
+        function c = motorCount(obj)
+            c = length(obj.mixer);
         end
+        
+    end 
+    
+    methods (Access=protected)
+        
+        function obj = MultirotorDynamics(params, mixer, airborne)
+            % Constructor
+            % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
+            % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
+            
+            if nargin < 3
+                airborne = true;
+            end
+            
+            obj.params = params;
+            obj.mixer = mixer;
+                        
+            % Always start at location (0,0,0) with zero velocities
+            obj.x    = zeros(1, 12);
+            obj.dxdt = zeros(1, 12);
+                        
+            % Values computed in Equation 6
+            obj.U1 = 0;     % total thrust
+            obj.U2 = 0;     % roll thrust right
+            obj.U3 = 0;     % pitch thrust forward
+            obj.U4 = 0;     % yaw thrust clockwise
+            obj.Omega = 0;  % torque clockwise
+            
+            % Initialize inertial frame acceleration in NED coordinates
+            obj.inertialAccel = transforms.bodyZToInertiall(-obj.g, [0,0,0]);
+            
+            % We usuall start on ground, but can start in air for testing
+            obj.airborne = airborne;
+            
+        end
+
+    end
+
+    methods(Access=private)
         
         function obj = computeStateDerivative(obj, accelNED, netz)
             % Implements Equation 12 computing temporal first derivative of state.
