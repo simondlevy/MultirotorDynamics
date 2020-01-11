@@ -11,10 +11,7 @@ classdef VehicleDisplay
         VEHICLE_SIZE      = 3;
         PROPELLER_RADIUS  = 0.5;
         PROPELLER_OFFSET  = 0.1;
-        
         WORLD_SIZE        = 20;
-        VEHICLE_COLOR     = 'r';
-        VEHICLE_LINEWIDTH = 2;
     end
     
     properties(Access=private)
@@ -65,18 +62,18 @@ classdef VehicleDisplay
             x2 = x+dx2*obj.d;
             y1 = y+dy1*obj.d;
             y2 = y+dy2*obj.d;
-            h = plot3([x1,x2], [y1,y2], [z,z], obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH);
-            h = [h, obj.plotprop(x1, y1, z)];
-            h = [h, obj.plotprop(x2, y2, z)];
+            h = plot3([x1,x2], [y1,y2], [z,z],'k');
+            h = [h, obj.plotprop(x1, y1, z, 'b')];
+            h = [h, obj.plotprop(x2, y2, z, 'r')];
         end
         
-        function h = plotprop(obj, x, y, z)
+        function h = plotprop(obj, x, y, z, c)
             hold on
             th = 0:pi/50:2*pi;
             xunit = obj.PROPELLER_RADIUS * cos(th) + x;
             yunit = obj.PROPELLER_RADIUS * sin(th) + y;
             zunit = (z+obj.PROPELLER_OFFSET) * ones(size(xunit));
-            h = plot3(xunit, yunit, zunit, obj.VEHICLE_COLOR, 'LineWidth',obj.VEHICLE_LINEWIDTH);
+            h = plot3(xunit, yunit, zunit, c);
             hold off
         end
         

@@ -4,13 +4,13 @@
 %
 %   playback(a) where A is an Nx7 matrix of kinematic data
 %
-%   playback(a, aviname) also saves the movie to file AVINAME
+%   playback(a, delay) delays for specified number of seconds before start
 % 
 % Copyright (C) 2019 Simon D. Levy
 %
 % MIT License
 
-function playback(a, aviname)
+function playback(a, delay)
 
     % Set up a quadcopter display
     veh = VehicleDisplay;
@@ -21,17 +21,20 @@ function playback(a, aviname)
     % Start at first frame
     k = 1;
 
-    % Open a video output file if indicated
-    if nargin > 1
-        vw = VideoWriter(aviname);
-        open(vw);
-    else
-        vw = [];
+    % Default delay is zero
+    if nargin < 2
+        delay = 0;
     end
-
+    
+    % Delay if specified
+    tic
+    while toc < delay
+        showvehicle(veh, 1, a)
+    end
+    
     % Start timing
     tic
-
+    
     % Loop through the time values, interpolating as we go
     while true
 
@@ -49,21 +52,16 @@ function playback(a, aviname)
         end
 
         % Display the current frame
-        showvehicle(veh, k, a, vw)
+        showvehicle(veh, k, a)
 
     end
 
     % Display the final frame
-    showvehicle(veh, length(a), a, vw)
-
-    % Cleanup
-    if ~isempty(vw)
-        close(vw);
-    end
+    showvehicle(veh, length(a), a)
 
 end
 
-function showvehicle(veh, k, a, vw)
+function showvehicle(veh, k, a)
 
     x     =  a(k,2);
     y     =  a(k,3);
@@ -73,8 +71,4 @@ function showvehicle(veh, k, a, vw)
     psi   =  a(k,7);
     veh.show(x, y, z, phi, theta, psi, ...
         sprintf('t=%3.2f/%3.2f  x=%+3.2f  y=%+3.2f  z=%3.2f', a(k,1), a(end,1), x, y, z))
-
-    if ~isempty(vw)
-        writeVideo(vw, getframe(gcf));
-    end
 end
