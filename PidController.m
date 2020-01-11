@@ -1,10 +1,10 @@
-% Simple PID controller for takeoff / altitude-hold
+% Simple PID controller 
 % 
 % Copyright (C) 2019 Simon D. Levy
 % 
 % MIT License
 
-classdef AltitudePidController
+classdef PidController
     
     properties (Access=private)
         
@@ -26,7 +26,7 @@ classdef AltitudePidController
     
     methods (Access=public)
         
-        function obj = AltitudePidController(target, posP, velP, velI, velD, windupMax)
+        function obj = PidController(target, posP, velP, velI, velD, windupMax)
             
             if nargin < 6
                 windupMax = obj.WINDUP_MAX_DEFAULT;

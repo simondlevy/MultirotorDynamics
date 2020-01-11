@@ -32,7 +32,7 @@ function kine = takeoff(dur, dt, dyn)
     end
 
     % Create PID controller
-    pid  = AltitudePidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
+    pid  = PidController(ALTITUDE_TARGET, ALT_P, VEL_P, VEL_I, VEL_D);
 
     % Default to DJI Phantom dynamics
     if nargin < 3
