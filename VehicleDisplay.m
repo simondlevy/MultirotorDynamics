@@ -47,6 +47,10 @@ classdef VehicleDisplay
             if nargin > 7
                 title(msg)
             end
+            
+            xlabel('X (m)')
+            ylabel('Y (m)')
+            zlabel('Z (m)')
 
             drawnow
 
