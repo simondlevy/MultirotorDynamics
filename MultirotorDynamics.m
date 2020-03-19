@@ -150,7 +150,7 @@ classdef MultirotorDynamics
             % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
             
             if nargin < 3
-                airborne = true;
+                airborne = false;
             end
             
             obj.params = params;
