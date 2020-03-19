@@ -131,6 +131,20 @@ classdef MultirotorDynamics
             % Returns a copy of the state vector as a tuple
             s = obj.x;
         end
+        
+        function obj = setPosition(obj, pos, airborne)
+            
+            if nargin < 3
+                airborne = false;
+            end
+            
+            obj.x(obj.STATE_X) = pos(1);
+            obj.x(obj.STATE_Y) = pos(2);
+            obj.x(obj.STATE_Z) = pos(3);
+
+            obj.airborne = airborne;
+            
+        end        
 
         function c = motorCount(obj)
             c = length(obj.mixer);
