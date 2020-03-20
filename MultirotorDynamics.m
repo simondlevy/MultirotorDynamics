@@ -215,16 +215,18 @@ classdef MultirotorDynamics
             p = obj.params;
             
             obj.dxdt(obj.STATE_X)          = obj.x(obj.STATE_X_DOT);
-            obj.dxdt(obj.STATE_X_DOT)      = accelNED(1);
             obj.dxdt(obj.STATE_Y)          = obj.x(obj.STATE_Y_DOT);
-            obj.dxdt(obj.STATE_Y_DOT)      = accelNED(2);
             obj.dxdt(obj.STATE_Z)          = obj.x(obj.STATE_Z_DOT);
-            obj.dxdt(obj.STATE_Z_DOT)      = netz;
             obj.dxdt(obj.STATE_PHI)        = phidot;
-            obj.dxdt(obj.STATE_PHI_DOT)    = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * obj.Omega + obj.U2 / p.Ix;
             obj.dxdt(obj.STATE_THETA)      = thedot;
-            obj.dxdt(obj.STATE_THETA_DOT)  = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * obj.Omega + obj.U3 / p.Iy);
             obj.dxdt(obj.STATE_PSI)        = psidot;
+            
+            obj.dxdt(obj.STATE_X_DOT)      = accelNED(1);
+            obj.dxdt(obj.STATE_Y_DOT)      = accelNED(2);
+            obj.dxdt(obj.STATE_Z_DOT)      = netz;
+
+            obj.dxdt(obj.STATE_PHI_DOT)    = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * obj.Omega + obj.U2 / p.Ix;
+            obj.dxdt(obj.STATE_THETA_DOT)  = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * obj.Omega + obj.U3 / p.Iy);
             obj.dxdt(obj.STATE_PSI_DOT)    = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;
         end
         
