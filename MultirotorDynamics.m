@@ -51,48 +51,56 @@ classdef MultirotorDynamics
         
         % A frame is defined by its mixer and parameters
         mixer;
-        params;
         
-        % Always start at location (0,0,0) with zero velocities
+        % We usuall start on ground, but can start in air for testing
+        airborne;        
+        
+        % Initialize inertial frame acceleration in NED coordinates
+        inertialAccel;
+        
+    end % private properties
+    
+    properties (Access=protected)
+        
+        % Frame constants
+        params;
+
+        % State vector and its first derivative
         x;
         dxdt;
+        
+        % Torque clockwise
+        Omega;  
         
         % Values computed in Equation 6
         U1;     % total thrust
         U2;     % roll thrust right
         U3;     % pitch thrust forward
         U4;     % yaw thrust clockwise
-        Omega;  % torque clockwise
-        
-        % Initialize inertial frame acceleration in NED coordinates
-        inertialAccel;
-        
-        % We usuall start on ground, but can start in air for testing
-        airborne;
-        
-    end
+                   
+    end % protected properties
     
     methods (Access=public)
         
         function obj = setMotors(obj, motorvals)
             % Uses motor values to implement Equation 6.
             % motorvals in interval [0,1]
-                        
+            
             % Convert the  motor values to radians per second
             omegas = motorvals * obj.params.maxrpm * pi / 30;
-                        
+            
             % Compute overall torque from omegas before squaring
             obj.Omega = sum(obj.mixer(:,3)' .* omegas);
-                                                                        
+            
             % Overall thrust is sum of squared omegas
             omegas2 = omegas.^2;
             obj.U1 = obj.params.b * sum(omegas2);
-
+            
             % Use the squared Omegas to implement the rest of Eqn. 6
             obj.U2 = obj.params.l * obj.params.b * sum(obj.mixer(:,1)' .* omegas2);
             obj.U3 = obj.params.l * obj.params.b * sum(obj.mixer(:,2)' .* omegas2);
             obj.U4 = obj.params.d * sum(obj.mixer(:,3)' .* omegas2);
-                        
+            
         end
         
         function obj = update(obj, dt)
@@ -105,7 +113,7 @@ classdef MultirotorDynamics
             
             % We're airborne once net downward acceleration goes below zero
             netz = accelNED(3) + obj.g;
-
+            
             % If we're not airborne, we become airborne when downward acceleration has become negative
             if ~obj.airborne
                 obj.airborne = netz < 0;
@@ -122,7 +130,7 @@ classdef MultirotorDynamics
                 
                 % Once airborne, inertial-frame acceleration is same as NED acceleration
                 obj.inertialAccel = accelNED;
-
+                
             end
             
         end % update()
@@ -141,20 +149,20 @@ classdef MultirotorDynamics
             obj.x(obj.STATE_X) = pos(1);
             obj.x(obj.STATE_Y) = pos(2);
             obj.x(obj.STATE_Z) = pos(3);
-
+            
             obj.airborne = airborne;
             
-        end        
-
+        end
+        
         function c = motorCount(obj)
             c = length(obj.mixer);
         end
-
+        
         function r = rollMixer(obj)
             r = obj.mixer(:,1)';
         end
         
-    end 
+    end
     
     methods (Access=protected)
         
@@ -163,18 +171,18 @@ classdef MultirotorDynamics
             % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
             % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
             
-           % Default to twelve-dimensional state vector
-           if nargin < 3
-               n = 12;
-           end
+            % Default to twelve-dimensional state vector
+            if nargin < 3
+                n = 12;
+            end
             
             obj.params = params;
             obj.mixer = mixer;
-                        
+            
             % Always start at location (0,0,0) with zero velocities
             obj.x    = zeros(1, n);
             obj.dxdt = zeros(1, n);
-                        
+            
             % Values computed in Equation 6
             obj.U1 = 0;     % total thrust
             obj.U2 = 0;     % roll thrust right
@@ -189,10 +197,7 @@ classdef MultirotorDynamics
             obj.airborne = false;
             
         end
-
-    end
-
-    methods(Access=private)
+        
         
         function obj = computeStateDerivative(obj, accelNED, netz)
             % Implements Equation 12 computing temporal first derivative of state.
@@ -202,7 +207,7 @@ classdef MultirotorDynamics
             % phidot rotational acceleration in roll axis
             % thedot rotational acceleration in pitch axis
             % psidot rotational acceleration in yaw axis
-            
+                       
             phidot = obj.x(obj.STATE_PHI_DOT);
             thedot = obj.x(obj.STATE_THETA_DOT);
             psidot = obj.x(obj.STATE_PSI_DOT);
@@ -223,6 +228,6 @@ classdef MultirotorDynamics
             obj.dxdt(obj.STATE_PSI_DOT)    = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;
         end
         
-    end  % private instance methods
+    end  % protected instance methods
     
 end % classdef
