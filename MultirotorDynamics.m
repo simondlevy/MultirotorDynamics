@@ -121,9 +121,12 @@ classdef MultirotorDynamics
             
             % Once airborne, we can update dynamics
             if obj.airborne
+
+                % Update first temporal derivative of entire state in Equation 12 (x1, x3, x5, ...)
+                obj.dxdt(obj.STATE_X:2:end) = obj.x(obj.STATE_X_DOT:2:end);
                 
-                %Compute the state derivatives using Equation 12
-                obj = obj.computeStateDerivative(accelNED, netz);
+                % Compute second derivatives in Equation 12 (x2, x4, x6, ...)
+                obj = obj.computeSecondDerivatives(accelNED, netz);
                 
                 % Compute state as first temporal integral of first temporal derivative
                 obj.x = obj.x + dt * obj.dxdt;
@@ -198,8 +201,7 @@ classdef MultirotorDynamics
             
         end
         
-        
-        function obj = computeStateDerivative(obj, accelNED, netz)
+        function obj = computeSecondDerivatives(obj, accelNED, netz)
             % Implements Equation 12 computing temporal first derivative of state.
             % Should fill _dxdx with appropriate values.
             % accelNED acceleration in NED inertial frame
@@ -208,26 +210,21 @@ classdef MultirotorDynamics
             % thedot rotational acceleration in pitch axis
             % psidot rotational acceleration in yaw axis
                        
+            % Second temporal derivative of position
+            obj.dxdt(obj.STATE_X_DOT) = accelNED(1);
+            obj.dxdt(obj.STATE_Y_DOT) = accelNED(2);
+            obj.dxdt(obj.STATE_Z_DOT) = netz;
+
+            % Shorthand
+            p = obj.params;
             phidot = obj.x(obj.STATE_PHI_DOT);
             thedot = obj.x(obj.STATE_THETA_DOT);
             psidot = obj.x(obj.STATE_PSI_DOT);
-            
-            p = obj.params;
-            
-            obj.dxdt(obj.STATE_X)          = obj.x(obj.STATE_X_DOT);
-            obj.dxdt(obj.STATE_Y)          = obj.x(obj.STATE_Y_DOT);
-            obj.dxdt(obj.STATE_Z)          = obj.x(obj.STATE_Z_DOT);
-            obj.dxdt(obj.STATE_PHI)        = phidot;
-            obj.dxdt(obj.STATE_THETA)      = thedot;
-            obj.dxdt(obj.STATE_PSI)        = psidot;
-            
-            obj.dxdt(obj.STATE_X_DOT)      = accelNED(1);
-            obj.dxdt(obj.STATE_Y_DOT)      = accelNED(2);
-            obj.dxdt(obj.STATE_Z_DOT)      = netz;
 
-            obj.dxdt(obj.STATE_PHI_DOT)    = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * obj.Omega + obj.U2 / p.Ix;
-            obj.dxdt(obj.STATE_THETA_DOT)  = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * obj.Omega + obj.U3 / p.Iy);
-            obj.dxdt(obj.STATE_PSI_DOT)    = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;
+            % Second temporal position of Euler angles
+            obj.dxdt(obj.STATE_PHI_DOT)   = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * obj.Omega + obj.U2 / p.Ix;
+            obj.dxdt(obj.STATE_THETA_DOT) = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * obj.Omega + obj.U3 / p.Iy);
+            obj.dxdt(obj.STATE_PSI_DOT)   = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;
         end
         
     end  % protected instance methods
