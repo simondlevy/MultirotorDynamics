@@ -158,14 +158,10 @@ classdef MultirotorDynamics
     
     methods (Access=protected)
         
-        function obj = MultirotorDynamics(params, mixer, airborne)
+        function obj = MultirotorDynamics(params, mixer)
             % Constructor
             % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
             % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
-            
-            if nargin < 3
-                airborne = false;
-            end
             
             obj.params = params;
             obj.mixer = mixer;
@@ -184,8 +180,8 @@ classdef MultirotorDynamics
             % Initialize inertial frame acceleration in NED coordinates
             obj.inertialAccel = transforms.bodyZToInertiall(-obj.g, [0,0,0]);
             
-            % We usuall start on ground, but can start in air for testing
-            obj.airborne = airborne;
+            % We're not airborne yet
+            obj.airborne = false;
             
         end
 
