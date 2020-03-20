@@ -206,10 +206,7 @@ classdef MultirotorDynamics
             % Should fill _dxdx with appropriate values.
             % accelNED acceleration in NED inertial frame
             % netz accelNED[2] with gravitational constant added in
-            % phidot rotational acceleration in roll axis
-            % thedot rotational acceleration in pitch axis
-            % psidot rotational acceleration in yaw axis
-                       
+
             % Second temporal derivative of position
             obj.dxdt(obj.STATE_X_DOT) = accelNED(1);
             obj.dxdt(obj.STATE_Y_DOT) = accelNED(2);
