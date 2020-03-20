@@ -158,17 +158,22 @@ classdef MultirotorDynamics
     
     methods (Access=protected)
         
-        function obj = MultirotorDynamics(params, mixer)
+        function obj = MultirotorDynamics(params, mixer, n)
             % Constructor
             % Initializes kinematic pose, with flag for whether we're airbone (helps with testing gravity).
             % airborne allows us to start on the ground (default) or in the air (e.g., gravity test)
+            
+           % Default to twelve-dimensional state vector
+           if nargin < 3
+               n = 12;
+           end
             
             obj.params = params;
             obj.mixer = mixer;
                         
             % Always start at location (0,0,0) with zero velocities
-            obj.x    = zeros(1, 12);
-            obj.dxdt = zeros(1, 12);
+            obj.x    = zeros(1, n);
+            obj.dxdt = zeros(1, n);
                         
             % Values computed in Equation 6
             obj.U1 = 0;     % total thrust
