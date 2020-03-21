@@ -206,15 +206,12 @@ classdef MultirotorDynamics
             % Implements Equation 12 computing temporal second derivative of state.
             
             euler = [obj.x(obj.STATE_PHI), obj.x(obj.STATE_THETA), obj.x(obj.STATE_PSI)];
-            accelNED = transforms.bodyZToInertiall(-obj.U1 / obj.params.m, euler);
-            
-            % We're airborne once net downward acceleration goes below zero
-            netz = accelNED(3) + obj.g;            
+            accelNED = transforms.bodyZToInertiall(-obj.U1 / obj.params.m, euler);         
 
             % Second temporal derivative of position
             obj.dxdt(obj.STATE_X_DOT) = accelNED(1);
             obj.dxdt(obj.STATE_Y_DOT) = accelNED(2);
-            obj.dxdt(obj.STATE_Z_DOT) = netz;
+            obj.dxdt(obj.STATE_Z_DOT) = accelNED(3) + obj.g;
 
             % Shorthand
             p = obj.params;
