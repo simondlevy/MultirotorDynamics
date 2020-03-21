@@ -205,6 +205,8 @@ classdef MultirotorDynamics
         function obj = computeSecondDerivatives(obj)
             % Implements Equation 12 computing temporal second derivative of state.
             
+            % Use the current Euler angles to rotate the orthogonal thrust vector into the inertial frame.
+            % Negate to use NED.            
             euler = [obj.x(obj.STATE_PHI), obj.x(obj.STATE_THETA), obj.x(obj.STATE_PSI)];
             accelNED = transforms.bodyZToInertiall(-obj.U1 / obj.params.m, euler);         
 
@@ -213,16 +215,23 @@ classdef MultirotorDynamics
             obj.dxdt(obj.STATE_Y_DOT) = accelNED(2);
             obj.dxdt(obj.STATE_Z_DOT) = accelNED(3) + obj.g;
 
+            % Second temporal derivative of orientation
+            obj = obj.computeOrientationSecondDerivatives();
+
+        end
+        
+        function obj = computeOrientationSecondDerivatives(obj)
+            
             % Shorthand
             p = obj.params;
             phidot = obj.x(obj.STATE_PHI_DOT);
             thedot = obj.x(obj.STATE_THETA_DOT);
             psidot = obj.x(obj.STATE_PSI_DOT);
 
-            % Second temporal position of Euler angles
             obj.dxdt(obj.STATE_PHI_DOT)   = psidot * thedot * (p.Iy - p.Iz) / p.Ix - p.Jr / p.Ix * thedot * obj.Omega + obj.U2 / p.Ix;
             obj.dxdt(obj.STATE_THETA_DOT) = -(psidot * phidot * (p.Iz - p.Ix) / p.Iy + p.Jr / p.Iy * phidot * obj.Omega + obj.U3 / p.Iy);
-            obj.dxdt(obj.STATE_PSI_DOT)   = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;
+            obj.dxdt(obj.STATE_PSI_DOT)   = thedot * phidot * (p.Ix - p.Iy) / p.Iz + obj.U4 / p.Iz;        
+        
         end
         
     end  % protected instance methods
