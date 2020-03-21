@@ -126,7 +126,7 @@ classdef MultirotorDynamics
                 obj.dxdt(obj.STATE_X:2:end) = obj.x(obj.STATE_X_DOT:2:end);
                 
                 % Compute second derivatives in Equation 12 (x2, x4, x6, ...)
-                obj = obj.computeSecondDerivatives(accelNED, netz);
+                obj = obj.computeSecondDerivatives();
                 
                 % Compute state as first temporal integral of first temporal derivative
                 obj.x = obj.x + dt * obj.dxdt;
@@ -179,6 +179,7 @@ classdef MultirotorDynamics
                 n = 12;
             end
             
+            % Store constants
             obj.params = params;
             obj.mixer = mixer;
             
@@ -201,11 +202,14 @@ classdef MultirotorDynamics
             
         end
         
-        function obj = computeSecondDerivatives(obj, accelNED, netz)
-            % Implements Equation 12 computing temporal first derivative of state.
-            % Should fill _dxdx with appropriate values.
-            % accelNED acceleration in NED inertial frame
-            % netz accelNED[2] with gravitational constant added in
+        function obj = computeSecondDerivatives(obj)
+            % Implements Equation 12 computing temporal second derivative of state.
+            
+            euler = [obj.x(obj.STATE_PHI), obj.x(obj.STATE_THETA), obj.x(obj.STATE_PSI)];
+            accelNED = transforms.bodyZToInertiall(-obj.U1 / obj.params.m, euler);
+            
+            % We're airborne once net downward acceleration goes below zero
+            netz = accelNED(3) + obj.g;            
 
             % Second temporal derivative of position
             obj.dxdt(obj.STATE_X_DOT) = accelNED(1);
