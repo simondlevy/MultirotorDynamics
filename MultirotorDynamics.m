@@ -204,6 +204,7 @@ classdef MultirotorDynamics
         
         function obj = computeSecondDerivatives(obj)
             % Implements Equation 12 computing temporal second derivative of state.
+            % Override to implement more complicated dynamics.
             
             % Use the current Euler angles to rotate the orthogonal thrust vector into the inertial frame.
             % Negate to use NED.            
