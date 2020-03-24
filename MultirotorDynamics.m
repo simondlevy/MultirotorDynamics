@@ -143,15 +143,13 @@ classdef MultirotorDynamics
             s = obj.x;
         end
         
-        function obj = setPosition(obj, pos, airborne)
+        function obj = setPose(obj, pose, airborne)
             
             if nargin < 3
                 airborne = false;
             end
             
-            obj.x(obj.STATE_X) = pos(1);
-            obj.x(obj.STATE_Y) = pos(2);
-            obj.x(obj.STATE_Z) = pos(3);
+            obj.x(obj.STATE_X:2:end) = pose;
             
             obj.airborne = airborne;
             
