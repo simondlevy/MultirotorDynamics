@@ -26,15 +26,30 @@ classdef VehicleDisplay
         end
         
         function show(obj, x, y, z, phi, theta, psi, msg)
-            % Angles in radians
+                        
+            h = obj.pre_show(x, y, z);
+            
+            obj.post_show(h, x, y, z, phi, theta, psi, msg)
+        
+        end
+        
+    end % public methods
+    
+    methods(Access=protected)
+        
+        function h = pre_show(obj, x, y, z)
                         
             h = [];
             h = [h,obj.plotarm(x, y, z, -1, -1, +1, +1)];
+            
             hold on
-            h = [h,obj.plotarm(x, y, z, -1, +1, +1, -1)];
                         
-            hold off
-             
+        end     
+        
+        function post_show(obj, h, x, y, z, phi, theta, psi, msg)
+                                
+            h = [h,obj.plotarm(x, y, z, -1, +1, +1, -1)];
+                                     
             axis([-obj.WORLD_SIZE obj.WORLD_SIZE -obj.WORLD_SIZE obj.WORLD_SIZE 0 obj.WORLD_SIZE])
             
             rotate(h, [0 0 1],  rad2deg(psi))
@@ -45,17 +60,15 @@ classdef VehicleDisplay
                 title(msg)
             end
             
+            hold off
+            
             xlabel('X (m)')
             ylabel('Y (m)')
             zlabel('Z (m)')
-
+            
             drawnow
 
-        end
-        
-    end
-    
-    methods(Access=private)
+        end             
         
         function h = plotarm(obj, x, y, z, dx1,dy1, dx2, dy2)
             x1 = x+dx1*obj.d;
@@ -77,7 +90,7 @@ classdef VehicleDisplay
             hold off
         end
         
-    end
+    end % protected methods
     
 end
 
