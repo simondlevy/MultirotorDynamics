@@ -125,8 +125,6 @@ class Dynamics {
         {
             _dt =  1 / framesPerSecond;
 
-            printf("%e\n", _dt);
-
             _autoland = autoland; 
 
             _motorCount = motorCount;
