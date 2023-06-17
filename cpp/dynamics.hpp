@@ -125,6 +125,8 @@ class Dynamics {
         {
             _dt =  1 / framesPerSecond;
 
+            printf("%e\n", _dt);
+
             _autoland = autoland; 
 
             _motorCount = motorCount;
@@ -288,8 +290,6 @@ class Dynamics {
                 motors[k] = fmotors[k];
             }
 
-            // Implement Equation 6 -------------------------------------------
-
             // Radians per second of rotors, and squared radians per second
             double omegas[MAX_ROTORS] = {};
             double omegas2[MAX_ROTORS] = {};
@@ -306,13 +306,12 @@ class Dynamics {
                 // Thrust coefficient is constant for fixed-pitch rotors,
                 // variable for collective-pitch
                 u1 += getThrustCoefficient(motors) * omegas2[i];                  
-
                 // Newton's Third Law (action/reaction) tells us that yaw is
                 // opposite to net rotor spin
                 u4 += _vparams.d * omegas2[i] * -getRotorDirection(i);
                 omega += omegas[i] * -getRotorDirection(i);
             }
-            
+
             // Compute roll, pitch, yaw forces (different method for
             // fixed-pitch blades vs. variable-pitch)
             double u2 = 0, u3 = 0;

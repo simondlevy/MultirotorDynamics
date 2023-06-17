@@ -14,10 +14,11 @@ Dynamics::vehicle_params_t vparams = {
 
     // Estimated
     5.E-03,  // force constatnt b [F=b*w^2]
-    2.E-06,  // torque constant d [T=d*w^2]
+    2.E-06,  // drag coefficient d [T=d*w^2]
 
     // https://www.dji.com/phantom-4/info
     1.380,  // mass m [kg]
+    0.350,  // arm length L [m]
 
     // Estimated
     2,       // Ix [kg*m^2]
