@@ -1,14 +1,15 @@
-<img src="takeoff.png" align="left" width="400">
-<img src="takeoff.gif" width="400">
+<img src="media/takeoff.png" align="left" width="400">
+<img src="media/takeoff.gif" width="400">
 
 
-This folder contains a Matlab implementation of the quadcopter dynamics equations in
+This folder contains a implementations of the quadcopter dynamics equations in
 ([Bouabdallah et al. 2004](https://infoscience.epfl.ch/record/97532/files/325.pdf)),
 extended to work with general multi-copter (quad, hex, octo) configurations.  
 
-## Quickstart
+## Matlab instructions
 
-Launch Matlab, change your working directory to where you installed this repository, and do
+Launch Matlab, change your working directory to <b>MultirotorDynamics/matlab</b>
+, and do
 ```
   >> takeoff(10, .001);
 ```
@@ -16,7 +17,7 @@ Launch Matlab, change your working directory to where you installed this reposit
 This will run a simple [PID controller](https://en.wikipedia.org/wiki/PID_controller) to make a simulated 
 quadcopter rise from the ground to 10 meters altitude, over a period of 10 seconds.
 
-## Playback
+# Playback
 
 The takeoff script returns an array of kinematic frames consisting of the current time and vehicle pose
 (x, y, z, roll, pitch, yaw).  This array can be passed to a playback script to display a 3D movie:
