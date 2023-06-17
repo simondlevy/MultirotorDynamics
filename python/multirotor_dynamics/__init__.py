@@ -111,7 +111,7 @@ class Dynamics:
         # No perturbation yet
         self._perturb = np.zeros(6)
 
-    def update(self, motorvals):
+    def setMotors(self, motorvals):
         '''
         Implements Equations 6 and 12 from Bouabdallah et al. (2004)
         '''
@@ -198,9 +198,12 @@ class Dynamics:
 
     def getState(self):
         '''
-        Returns a copy of the state vector as a tuple
+        Returns the state vector as a dictionary
         '''
-        return tuple(self._x)
+        keys = ('x', 'dx', 'y', 'dy', 'z', 'dz',
+                'phi', 'dphi', 'theta', 'dtheta', 'psi', 'dpsi')
+
+        return {key: value for key, value in zip(keys, self._x)}
 
     def setState(self, state):
         '''
