@@ -84,7 +84,7 @@ class Dynamics {
 
         double _capSpeed(const double speed)
         {
-            const auto cap = _vparams.maxspeed;
+            const auto cap = _vparams.maxrpm;
 
             return speed < -cap ? -cap : speed > cap ? cap : speed;
         }
@@ -96,14 +96,16 @@ class Dynamics {
          */
         typedef struct {
 
+            double b;  // force constatnt [F=b*w^2]
             double d;  // drag coefficient [T=d*w^2]
             double m;  // mass [kg]
+            double l;  // arm length [m]
             double Ix; // [kg*m^2] 
             double Iy; // [kg*m^2] 
             double Iz; // [kg*m^2] 
             double Jr; // rotor inertial [kg*m^2] 
-            uint16_t maxrpm; // maxrpm
-            double maxspeed; // [m/s]
+
+            uint16_t maxrpm; 
 
         } vehicle_params_t; 
 
