@@ -2,7 +2,7 @@
 <img src="media/takeoff.gif" width="400">
 
 
-This folder contains a implementations of the quadcopter dynamics equations in
+This folder contains implementations of the quadcopter dynamics equations in
 ([Bouabdallah et al. 2004](https://infoscience.epfl.ch/record/97532/files/325.pdf)),
 extended to work with general multi-copter (quad, hex, octo) configurations.  
 
