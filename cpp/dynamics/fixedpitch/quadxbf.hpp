@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "../FixedPitch.hpp"
+#include "../fixedpitch.hpp"
 
 class QuadXBFDynamics : public FixedPitchDynamics {
 
