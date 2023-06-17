@@ -108,9 +108,6 @@ class Dynamics:
         self._inertialAccel = (
             Dynamics._bodyZToInertial(-self.G, (0, 0, 0)))
 
-        # No perturbation yet
-        self._perturb = np.zeros(6)
-
     def setMotors(self, motorvals):
         '''
         Implements Equations 6 and 12 from Bouabdallah et al. (2004)
@@ -179,9 +176,6 @@ class Dynamics:
             # Compute the state derivatives using Equation 12
             self._computeStateDerivative(accelNED, netz, U2, U3, U4, Omega)
 
-            # Add instantaneous perturbation
-            self._dxdt[1::2] += self._perturb
-
             # Compute state as first temporal integral of first temporal
             # derivative
             self._x += self._dt * self._dxdt
@@ -189,9 +183,6 @@ class Dynamics:
             # Once airborne, inertial-frame acceleration is same as NED
             # acceleration
             self._inertialAccel = accelNED.copy()
-
-        # Reset instantaneous perturbation
-        self._perturb = np.zeros(6)
 
         # Update time
         self._ticks += 1
@@ -204,27 +195,6 @@ class Dynamics:
                 'phi', 'dphi', 'theta', 'dtheta', 'psi', 'dpsi')
 
         return {key: value for key, value in zip(keys, self._x)}
-
-    def setState(self, state):
-        '''
-        Sets the state to the values specified in a sequence
-        '''
-        self._x = np.array(state)
-        self._status = (self.STATUS_AIRBORNE
-                        if self._x[self.STATE_Z] < 0
-                        else self.STATUS_LANDED)
-
-    def getTime(self):
-
-        return self._ticks * self._dt
-
-    def getStatus(self):
-
-        return self._status
-
-    def perturb(self, force):
-
-        self._perturb = force / self.M
 
     def _u2(self,  o):
         '''
@@ -258,34 +228,32 @@ class Dynamics:
 
         self._dxdt[self.STATE_X] = self._x[self.STATE_X_DOT]
 
-        self._dxdt[self.STATE_X_DOT] = accelNED[0] + self._perturb[0]
+        self._dxdt[self.STATE_X_DOT] = accelNED[0]
 
         self._dxdt[self.STATE_Y] = self._x[self.STATE_Y_DOT]
 
-        self._dxdt[self.STATE_Y_DOT] = accelNED[1] + self._perturb[1]
+        self._dxdt[self.STATE_Y_DOT] = accelNED[1]
 
         self._dxdt[self.STATE_Z] = self._x[self.STATE_Z_DOT]
 
-        self._dxdt[self.STATE_Z_DOT] = netz + self._perturb[2]
+        self._dxdt[self.STATE_Z_DOT] = netz
 
         self._dxdt[self.STATE_PHI] = phidot
 
         self._dxdt[self.STATE_PHI_DOT] = (
             psidot*thedot*(self.Iy-self.Iz) / self.Ix-self.Jr /
-            self.Ix*thedot*Omega + U2 / self.Ix + self._perturb[3])
+            self.Ix*thedot*Omega + U2 / self.Ix)
 
         self._dxdt[self.STATE_THETA] = thedot
 
         self._dxdt[self.STATE_THETA_DOT] = (
                 -(psidot*phidot*(self.Iz-self.Ix) / self.Iy + self.Jr /
-                  self.Iy*phidot*Omega + U3 / self.Iy) +
-                self._perturb[4])
+                  self.Iy*phidot*Omega + U3 / self.Iy))
 
         self._dxdt[self.STATE_PSI] = psidot
 
         self._dxdt[self.STATE_PSI_DOT] = (
-            thedot*phidot*(self.Ix-self.Iy)/self.Iz +
-            U4/self.Iz + self._perturb[5])
+            thedot*phidot*(self.Ix-self.Iy)/self.Iz + U4/self.Iz)
 
     def _bodyZToInertial(bodyZ, rotation):
         '''
