@@ -3,26 +3,7 @@
  *
  * Should work for any simulator, vehicle, or operating system
  *
- * Based on:
- *
- *   @inproceedings{DBLP:conf/icra/BouabdallahMS04,
- *     author    = {Samir Bouabdallah and Pierpaolo Murrieri and Roland
-                    Siegwart},
- *     title     = {Design and Control of an Indoor Micro Quadrotor},
- *     booktitle = {Proceedings of the 2004 {IEEE} International Conference on
-                    Robotics and Automation, {ICRA} 2004, April 26 - May 1,
-                    2004, New Orleans, LA, {USA}},
- *     pages     = {4393--4398},
- *     year      = {2004},
- *     crossref  = {DBLP:conf/icra/2004},
- *     url       = {https://doi.org/10.1109/ROBOT.2004.1302409},
- *     doi       = {10.1109/ROBOT.2004.1302409},
- *     timestamp = {Sun, 04 Jun 2017 01:00:00 +0200},
- *     biburl    = {https://dblp.org/rec/bib/conf/icra/BouabdallahMS04},
- *     bibsource = {dblp computer science bibliography, https://dblp.org}
- *   }
- *
- * Copyright (C) 2019 Simon D. Levy
+ * Copyright (C) 2023 Simon D. Levy
  *
  * MIT License
  */
@@ -64,8 +45,6 @@ class Dynamics {
 
         } vehicle_state_t;
 
-        vehicle_state_t vstate;
-
     private:
 
         typedef struct {
@@ -88,6 +67,8 @@ class Dynamics {
 
             return speed < -cap ? -cap : speed > cap ? cap : speed;
         }
+
+        double _dt;
 
     public:
 
@@ -133,26 +114,30 @@ class Dynamics {
         vehicle_params_t _vparams;
         world_params_t _wparams;
 
+        vehicle_state_t _vstate;
         vehicle_state_t _vstate_deriv;
 
         Dynamics(
-                const uint8_t actuatorCount,
+                const uint8_t motorCount,
                 const vehicle_params_t & vparams,
+                const double framesPerSecond,
                 const bool autoland=true)
         {
+            _dt =  1 / framesPerSecond;
+
             _autoland = autoland; 
 
-            _actuatorCount = actuatorCount;
+            _motorCount = motorCount;
 
             // can be overridden for thrust-vectoring
-            _rotorCount = actuatorCount; 
+            _rotorCount = motorCount; 
 
             memcpy(&_vparams, &vparams, sizeof(vehicle_params_t));
 
             // Default to Earth params (can be overridden by setWorldParams())
             memcpy(&_wparams, &EARTH_PARAMS, sizeof(world_params_t));
 
-            memset(&vstate, 0, sizeof(vstate));
+            memset(&_vstate, 0, sizeof(_vstate));
         }        
 
         // Flag for whether we're airborne and can update dynamics
@@ -207,12 +192,12 @@ class Dynamics {
         // quad, hexa, octo, etc.
         uint8_t _rotorCount = 0;
 
-        // For coaxials we have five actuators: two rotors, plus collective
+        // For coaxials we have five motors: two rotors, plus collective
         // pitch, cyclic roll, and cyclic pitch.  For thrust vectoring, we have
-        // four actuators: two rotors and two servos.
-        // For standard multirotors (e.g., quadcopter), actuatorCount =
+        // four motors: two rotors and two servos.
+        // For standard multirotors (e.g., quadcopter), motorCount =
         // rotorCount.
-        uint8_t _actuatorCount = 0;
+        uint8_t _motorCount = 0;
 
         /**
          * Implements Equation 12 computing temporal first derivative of state.
@@ -231,9 +216,9 @@ class Dynamics {
                                     double u3,
                                     double u4)
         {
-            double phidot = vstate.dphi;
-            double thedot = vstate.dtheta;
-            double psidot = vstate.dpsi;
+            double phidot = _vstate.dphi;
+            double thedot = _vstate.dtheta;
+            double psidot = _vstate.dpsi;
 
             double Ix = _vparams.Ix;
             double Iy = _vparams.Iy;
@@ -241,19 +226,19 @@ class Dynamics {
             double Jr = _vparams.Jr;
 
             // x'
-            _vstate_deriv.x = vstate.dx;
+            _vstate_deriv.x = _vstate.dx;
             
             // x''
             _vstate_deriv.dx = accelNED[0];
 
             // y'
-            _vstate_deriv.y = vstate.dy;
+            _vstate_deriv.y = _vstate.dy;
 
             // y''
             _vstate_deriv.dy = accelNED[1];
 
             // z'
-            _vstate_deriv.z = vstate.dz;
+            _vstate_deriv.z = _vstate.dz;
 
             // z''
             _vstate_deriv.dz = netz;
@@ -279,47 +264,6 @@ class Dynamics {
             _vstate_deriv.dpsi = thedot * phidot * (Ix - Iy) / Iz + u4 / Iz;
         }
 
-
-    public:
-
-        /**
-         * Initializes kinematic pose, with flag for whether we're airbone
-         * (helps with testing gravity).
-         *
-         * @param rotation initial rotation
-         * @param airborne allows us to start on the ground (default) or in the
-         * air (e.g., gravity test)
-         */
-        void init(const double rotation[3], const bool airborne = false)
-        {
-            // Always start at location (0,0,0)
-            memset(&vstate, 0, sizeof(vstate));
-
-            vstate.phi   = rotation[0];
-            vstate.theta = rotation[1];
-            vstate.psi   = rotation[2];
-
-            _airborne = airborne;
-
-            // Initialize inertial frame acceleration in NED coordinates
-            bodyZToInertial(-_wparams.g, rotation, _inertialAccel);
-
-            // We usuall start on ground, but can start in air for testing
-            _airborne = airborne;
-        }
-
-
-        /**
-         * Sets height above ground level (AGL).
-         * This method can be called by the kinematic visualization.
-         */
-        void setAgl(const double agl)
-        {
-            _agl = agl;
-        }
-
-        // Different for each vehicle
-
         virtual int8_t getRotorDirection(const uint8_t i) = 0;
 
         virtual double getThrustCoefficient(double * actuators) = 0;
@@ -329,47 +273,19 @@ class Dynamics {
                                          double & roll,
                                          double & pitch) = 0;
 
-        /**
-         * Gets actuator count set by constructor.
-         * @return actuator count
-         */
-        uint8_t actuatorCount(void)
-        {
-            return _actuatorCount;
-        }
+    public:
 
         /**
-         * Gets rotor count set by constructor.
-         * @return rotor count
-         */
-        uint8_t rotorCount(void)
-        {
-            return _rotorCount;
-        }
-
-
-        /**
-          * Sets world parameters (currently just gravity and air density)
-          */
-        void setWorldParams(const double g, const double rho)
-        {
-            _wparams.g = g;
-            _wparams.rho = rho;
-        }
-
-        /**
-         * Updates state.
+         * Uses motor values to update state
          *
-         * @param actuators values in interval [0,1] (rotors) or [-0.5,+0.5]
-                  (servos)
-         * @param dt time in seconds since previous update
+         * @param motors values in interval [0,1]
          */
-        void update(const float * factuators, const double dt) 
+        void setMotors(const float * fmotors) 
         {
-            // Convert actuator values to double-precision for consistency
-            double actuators[10];
+            // Convert motor values to double-precision for consistency
+            double motors[10];
             for (auto k=0; k<_rotorCount; ++k) {
-                actuators[k] = factuators[k];
+                motors[k] = fmotors[k];
             }
 
             // Implement Equation 6 -------------------------------------------
@@ -382,14 +298,14 @@ class Dynamics {
             for (unsigned int i = 0; i < _rotorCount; ++i) {
 
                 // Convert fractional speed to radians per second
-                omegas[i] = actuators[i] * _vparams.maxrpm * M_PI / 30;  
+                omegas[i] = motors[i] * _vparams.maxrpm * M_PI / 30;  
 
                 // Thrust is squared rad/sec scaled by air density
                 omegas2[i] = _wparams.rho * omegas[i] * omegas[i]; 
 
                 // Thrust coefficient is constant for fixed-pitch rotors,
                 // variable for collective-pitch
-                u1 += getThrustCoefficient(actuators) * omegas2[i];                  
+                u1 += getThrustCoefficient(motors) * omegas2[i];                  
 
                 // Newton's Third Law (action/reaction) tells us that yaw is
                 // opposite to net rotor spin
@@ -400,13 +316,13 @@ class Dynamics {
             // Compute roll, pitch, yaw forces (different method for
             // fixed-pitch blades vs. variable-pitch)
             double u2 = 0, u3 = 0;
-            computeRollAndPitch(actuators, omegas2, u2, u3);
+            computeRollAndPitch(motors, omegas2, u2, u3);
 
             // ----------------------------------------------------------------
 
             // Use the current Euler angles to rotate the orthogonal thrust
             // vector into the inertial frame.  Negate to use NED.
-            double euler[3] = {vstate.phi, vstate.theta, vstate.psi};
+            double euler[3] = {_vstate.phi, _vstate.theta, _vstate.psi};
             double accelNED[3] = {};
             bodyZToInertial(-u1 / _vparams.m, euler, accelNED);
 
@@ -420,16 +336,16 @@ class Dynamics {
 
                     _airborne = false;
 
-                    vstate.dx = 0;
-                    vstate.dy = 0;
-                    vstate.dz = 0;
-                    vstate.phi = 0;
-                    vstate.dphi = 0;
-                    vstate.theta = 0;
-                    vstate.dtheta = 0;
-                    vstate.dpsi = 0;
+                    _vstate.dx = 0;
+                    _vstate.dy = 0;
+                    _vstate.dz = 0;
+                    _vstate.phi = 0;
+                    _vstate.dphi = 0;
+                    _vstate.theta = 0;
+                    _vstate.dtheta = 0;
+                    _vstate.dpsi = 0;
 
-                    vstate.z += _agl;
+                    _vstate.z += _agl;
                 }
             }
 
@@ -447,22 +363,22 @@ class Dynamics {
 
                 // Compute state as first temporal integral of first temporal
                 // derivative
-                vstate.x += dt * _vstate_deriv.x;
-                vstate.dx += dt * _vstate_deriv.dx;
-                vstate.y += dt * _vstate_deriv.y;
-                vstate.dy += dt * _vstate_deriv.dy;
-                vstate.z += dt * _vstate_deriv.z;
-                vstate.dz += dt * _vstate_deriv.dz;
-                vstate.phi += dt * _vstate_deriv.phi;
-                vstate.dphi += dt * _vstate_deriv.dphi;
-                vstate.theta += dt * _vstate_deriv.theta;
-                vstate.dtheta += dt * _vstate_deriv.dtheta;
-                vstate.psi += dt * _vstate_deriv.psi;
-                vstate.dpsi += dt * _vstate_deriv.dpsi;
+                _vstate.x += _dt * _vstate_deriv.x;
+                _vstate.dx += _dt * _vstate_deriv.dx;
+                _vstate.y += _dt * _vstate_deriv.y;
+                _vstate.dy += _dt * _vstate_deriv.dy;
+                _vstate.z += _dt * _vstate_deriv.z;
+                _vstate.dz += _dt * _vstate_deriv.dz;
+                _vstate.phi += _dt * _vstate_deriv.phi;
+                _vstate.dphi += _dt * _vstate_deriv.dphi;
+                _vstate.theta += _dt * _vstate_deriv.theta;
+                _vstate.dtheta += _dt * _vstate_deriv.dtheta;
+                _vstate.psi += _dt * _vstate_deriv.psi;
+                _vstate.dpsi += _dt * _vstate_deriv.dpsi;
 
                 // Cap dx, dy by maximum speed
-                vstate.dx = _capSpeed(vstate.dx);
-                vstate.dy = _capSpeed(vstate.dy);
+                _vstate.dx = _capSpeed(_vstate.dx);
+                _vstate.dy = _capSpeed(_vstate.dy);
 
                 // Once airborne, inertial-frame acceleration is same as NED
                 // acceleration
@@ -472,12 +388,17 @@ class Dynamics {
             }
             else if (_autoland) {
                 //"fly" to agl=0
-                vstate.z += 5 * _agl * dt;
+                _vstate.z += 5 * _agl * _dt;
             }
 
             // XXX
-            //vstate.z = -1;
+            //_vstate.z = -1;
 
-        } // update
+        } // setMotors
+
+        const vehicle_state_t & getState(void)
+        {
+            return _vstate;
+        }
 
 }; // class Dynamics
