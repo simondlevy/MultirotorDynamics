@@ -120,10 +120,10 @@ class Dynamics {
         Dynamics(
                 const uint8_t motorCount,
                 const vehicle_params_t & vparams,
-                const double framesPerSecond,
+                const double frequency=1e7,
                 const bool autoland=true)
         {
-            _dt =  1 / framesPerSecond;
+            _dt =  1 / frequency;
 
             _autoland = autoland; 
 

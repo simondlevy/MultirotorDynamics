@@ -42,11 +42,8 @@ class QuadXBFDynamics : public FixedPitchDynamics {
 
         QuadXBFDynamics(
                 Dynamics::vehicle_params_t &vparams,
-                FixedPitchDynamics::fixed_pitch_params_t &fparams,
-                const double framesPerSecond,
-                bool autoland=true)
-            : FixedPitchDynamics(
-                    4, vparams, fparams, framesPerSecond, autoland)
+                FixedPitchDynamics::fixed_pitch_params_t &fparams)
+            : FixedPitchDynamics( 4, vparams, fparams)
         {
         }
 

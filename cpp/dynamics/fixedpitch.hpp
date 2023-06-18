@@ -34,10 +34,8 @@ class FixedPitchDynamics : public Dynamics {
         FixedPitchDynamics(
                 uint8_t nmotors,
                 Dynamics::vehicle_params_t &vparams,
-                fixed_pitch_params_t &fparams,
-                const double framesPerSecond,
-                bool autoland=true)
-            : Dynamics(nmotors, vparams, framesPerSecond, autoland)
+                fixed_pitch_params_t &fparams)
+            : Dynamics(nmotors, vparams)
         {
             memcpy(&_fparams, &fparams, sizeof(fixed_pitch_params_t));
         }
